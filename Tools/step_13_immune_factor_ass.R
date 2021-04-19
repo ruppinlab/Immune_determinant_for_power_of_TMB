@@ -20,6 +20,8 @@ immune_factor$NSCLC= sapply(seq(1:nrow(immune_factor)), function (x)
   (immune_factor[x,'LUAD']* 0.5 + immune_factor[x,'LUAD']* 0.5))
 
 immune_factor= t(immune_factor)
+
+
 #####
 # Combined dataset of mskcc and Valero
 #####
@@ -65,7 +67,7 @@ cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]>
 # function for cox regression for survival vs TMB
 #####
 cox_by_cancer_type_and_TMB<-function(infunc_df= mskcc_combined, 
-                                            COI='Renal'){
+                                            COI='Mesothelioma'){
   infunc_df_tmb=infunc_df[((infunc_df$Cancer_Type == COI)),]
   infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
   model <- coxph(Surv(time = Overall_survival_months,
@@ -76,9 +78,10 @@ cox_by_cancer_type_and_TMB<-function(infunc_df= mskcc_combined,
   cbind(model_sum$coef,model_sum$conf.int)
 }
 
-cox_results_of_TMB= data.frame(row.names = cancerTypes_of_Interset,
-                                          do.call(rbind, lapply(cancerTypes_of_Interset, function(x) 
-                                          (cox_by_cancer_type_and_TMB(infunc_df = mskcc_combined, COI = x)))))
+cox_results_of_TMB= data.frame(row.names = cancerTypes_of_Interest,
+                                          do.call(rbind, lapply(cancerTypes_of_Interest, function(x) 
+                                          (cox_by_cancer_type_and_TMB(infunc_df = mskcc_combined, 
+                                                                              COI = x)))))
 
 cox_results_of_TMB$cancer_acorymn= c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
                                      'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',

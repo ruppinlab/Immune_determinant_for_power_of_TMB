@@ -20,17 +20,30 @@ immune_factor$non_lymphocytes=rowMeans(apply(immune_factor[,colnames(immune_fact
 ################################################################################
 # Step 1: Load and Preprocess
 ################################################################################
-response_result_with_TMB= data.frame(row.names = cancerTypes_ofInterset,
-                                do.call(rbind, lapply(cancerTypes_ofInterset, function(x) 
-                                  err_handle(output_fisher_test(infunc_df = Valero_pd1, COI = x)))))
+output_fisher_test<-function(infunc_df=mskcc_combined, COI= "NSCLC"){
+  
+  infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
+  infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+  # Contigency matrix
+  cont_matrix=table( infunc_df_tmb$TMB>=10, infunc_df_tmb$ORR)
+  # Perform fisher test
+  fisher_test_results_raw=fisher.test(cont_matrix)
+  to_return= c(fisher_test_results_raw$estimate,
+               pval = fisher_test_results_raw$p.value,
+               min = fisher_test_results_raw$conf.int[1],
+                max = fisher_test_results_raw$conf.int[2])
+}
+
+response_result_with_TMB= data.frame(row.names = cancerTypes_of_Interest,
+                                do.call(rbind, lapply(cancerTypes_of_Interest, function(x) 
+                                  err_handle(output_fisher_test(infunc_df = mskcc_combined, COI = x)))))
+
 response_result_with_TMB$cancer_acorymn= c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
                                            'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
                                            'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
 response_result_with_TMB=na.omit(response_result_with_TMB)
 colnames(response_result_with_TMB)[c(1,2)]= c("P", "odd_ratio")
-# cancertype_less_50 = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 50]
-# response_result_with_TMB = na.omit(response_result_with_TMB[(rownames(response_result_with_TMB)
-#                                                              %in% cancertype_less_50),])
+
 rownames(response_result_with_TMB)= response_result_with_TMB$cancer_acorymn
 ################################################################################
 # Step 2: Considering all cancer types

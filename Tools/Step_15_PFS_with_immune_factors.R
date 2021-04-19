@@ -1,38 +1,35 @@
 ##### PFS with immune factor correaltion
 colnames(immune_factor)[grep('resting',colnames(immune_factor))]='CD4 Memory cells'
 ################################################################################
-# Step 1: Load & Preprocess
+# Step 1: Load & Preprocess #### repeat step from code of step 10 in case of confusion
 ################################################################################
-#### repeat step from code of step9
-Valero_pd1=Valero_ICI_pd1
-table(Valero_pd1$Cancer.type)
-Valero_pd1$Cancer_Type_acronym=NA
-Valero_pd1$Cancer.type=factor(Valero_pd1$Cancer.type)
-Valero_pd1$Cancer_Type_acronym=Valero_pd1$Cancer.type
-levels(factor(Valero_pd1$Cancer.type))
-levels(mskcc_combined$Cancer_Type_acronym)=c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
-                                             'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
-                                             'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
-
 
 samples_each_cancer_type=aggregate(ID ~ Cancer.type, Valero_ICI_pd1, length)
-cancerTypes_ofInterset=samples_each_cancer_type[,1][samples_each_cancer_type[,2]>1]
-cox_by_cancer_type_PFS<-function(infunc_df=Valero_pd1, COI= "Sarcoma"){
+cancerTypes_of_Interest_PFS=samples_each_cancer_type[,1][samples_each_cancer_type[,2]>1]
+
+cox_by_cancer_type_PFS<-function(infunc_df=Valero_ICI_pd1, COI= "Sarcoma"){
   infunc_df_tmb=infunc_df[((infunc_df$Cancer_Type == COI)),]
+  
   infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
-  model <- coxph(Surv(Progression.Free.Survival..Months.,
-                      Overall_survival_status) ~ (TMB >=10),
+  dim(infunc_df_tmb)
+  model <- coxph(Surv(PFS_months,
+                      PFS_status) ~ (TMB >=10),
                  data = infunc_df_tmb)
   model_sum=summary(model)
-  model_sum$coefficients[c(2, 5)]
-  # cbind(model_sum$coef,model_sum$conf.int)
+  # model_sum$coefficients[c(2, 5)]
+  cbind(model_sum$coef,model_sum$conf.int)
 }
-PFS_result_with_TMB = data.frame(row.names = cancerTypes_ofInterset,
-                               do.call(rbind, lapply(cancerTypes_ofInterset, function(x) 
-                                 (cox_by_cancer_type_PFS(infunc_df = Valero_pd1, COI = x)))))
+
+
+PFS_result_with_TMB = data.frame(row.names = cancerTypes_of_Interest,
+                               do.call(rbind, lapply(cancerTypes_of_Interest, function(x) 
+                                 (cox_by_cancer_type_PFS(infunc_df = mskcc_combined, COI = x)))))
 PFS_result_with_TMB$cancer_acorymn= c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
                                      'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
                                      'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
+
+
+
 PFS_result_with_TMB=na.omit(PFS_result_with_TMB)
 colnames(PFS_result_with_TMB)[c(1,2)]= c("HR", "P")
 cancertype_less_50 = samples_each_cancer_type[,1][samples_each_cancer_type[,2]>50]
