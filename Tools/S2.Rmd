@@ -1,0 +1,289 @@
+---
+title: "Multivariate Regression"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+<!--Run RMD files (s0,s1 and Figure1) before running it-->
+<!--training and testing data preprocessing-->
+```{r}
+### DF: Power of TMB with variable, measure by OS
+
+POT_with_variable_by_OS= na.omit(data.frame(OS_difference[allcancer_types,],
+                              immune_factor[allcancer_types,c(22,39,24,37)]))
+colnames(POT_with_variable_by_OS)[c(3:6)]= c("M1_macrophage","Tumor_purity",'Resting_DC',"PDL1_CPS")
+
+POT_with_variable_by_OS = POT_with_variable_by_OS[is.finite(POT_with_variable_by_OS$effect_size),]
+POT_with_variable_by_OS= POT_with_variable_by_OS[!(rownames(POT_with_variable_by_OS) %in% c('KIRC')),]
+
+POT_with_variable_by_OS$new_M1_macrophage= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+                                                                        'Macrophages.M1'])
+POT_with_variable_by_OS$new_Resting_DC= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+                                                                        'Dendritic.Cells.Resting'])
+
+POT_with_variable_by_OS[order(POT_with_variable_by_OS$effect_size),]
+
+### DF: Power of TMB with variable, measure by PFS
+POT_with_variable_by_PFS= na.omit(data.frame(PFS_difference[allcancer_types,],
+                              immune_factor[allcancer_types,c(22,39,24,37)]))
+colnames(POT_with_variable_by_PFS)[c(3:6)]= c("M1_macrophage","Tumor_purity",'Resting_DC',"PDL1_CPS")
+
+POT_with_variable_by_PFS = POT_with_variable_by_PFS[is.finite(POT_with_variable_by_PFS$effect_size),]
+
+POT_with_variable_by_PFS= POT_with_variable_by_PFS[!(rownames(POT_with_variable_by_PFS) %in% c('KIRC')),]
+
+POT_with_variable_by_PFS$new_M1_macrophage=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS)                                                                               ,'Macrophages.M1'])
+POT_with_variable_by_PFS$new_Resting_DC= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS),
+                                                                        'Dendritic.Cells.Resting'])
+
+### DF: Power of TMB with variable, measure by ORR
+POT_with_variable_by_ORR= na.omit(data.frame(ORR_difference[allcancer_types,],
+                              immune_factor[allcancer_types,c(22,39,24,37)]))
+colnames(POT_with_variable_by_ORR)[c(3:6)]= c("M1_macrophage","Tumor_purity",'Resting_DC',"PDL1_CPS")
+
+POT_with_variable_by_ORR = POT_with_variable_by_ORR[is.finite(POT_with_variable_by_ORR$effect_size),]
+POT_with_variable_by_ORR= POT_with_variable_by_ORR[!(rownames(POT_with_variable_by_ORR) %in%    c("OV",'COAD')),]
+
+POT_with_variable_by_ORR$new_M1_macrophage=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR)
+                                                                             ,'Macrophages.M1'])
+POT_with_variable_by_ORR$new_Resting_DC= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR),
+                                                                        'Dendritic.Cells.Resting'])
+
+# cor.test(POT_with_variable_by_OS$effect_size, POT_with_variable_by_OS$Resting_DC, method = 'p')
+
+
+###### new df with TCGA immune abundance
+all_cancer_types_trained= allcancer_types[!(allcancer_types %in% c('MESO','STAD','SCLC'))]
+
+test_df_joo= immune_factor[c('ACC','CESC','MESO','UVM', 'PRAD'),c(22,39,24,37)]
+colnames(test_df_joo)= c("M1_macrophage","Tumor_purity",'Resting_DC',"PDL1_CPS")
+
+test_df_2= na.omit(immune_cells_by_cancerType[!(rownames(immune_cells_by_cancerType) %in% all_cancer_types_trained),c('Macrophages.M1', "Dendritic.Cells.Resting")])
+
+test_df_2= test_df_2[!(rownames(test_df_2) %in% c('LUAD','LUSC')),]
+colnames(test_df_2)=c("M1_macrophage",'Resting_DC') 
+
+```
+
+```{r}
+################################################################
+## rank the variables
+################################################################
+# POT_with_variable$rank_effect_size= rank(POT_with_variable$effect_size)
+# POT_with_variable$rank_m1_macrophage= rank(POT_with_variable$M1.macrophage.)
+# POT_with_variable$rank_Tumor_purity= rank(POT_with_variable$Tumor.purity.)
+# POT_with_variable$rank_resting_DC= rank(POT_with_variable$Resting.dendritic.cells.)
+# POT_with_variable$rank_pd1_CPS= rank(POT_with_variable$PDL1..combined.positive.score.)
+```
+
+<!--Sanity check for modulator calculated by joo and from TCGA-->
+```{r}
+range(POT_with_variable_by_ORR$M1_macrophage)
+range(POT_with_variable_by_ORR$new_M1_macrophage)
+
+range(POT_with_variable_by_ORR$Resting_DC)
+range(POT_with_variable_by_ORR$new_Resting_DC)
+
+ggplot(data=POT_with_variable_by_ORR, aes(x=Resting_DC, y=new_Resting_DC))+
+  geom_point()+
+  stat_smooth(method='lm')+
+  theme_bw(base_size = 15)+
+  labs(x='OLD resting Dendrictic cell', y='New resting Dendrictic cell')+
+  stat_cor(label.y =c(0,0), label.x = c(0,0) , method = 'p', cor.coef.name = 'rho', size=5)
+
+ggplot(data=POT_with_variable_by_ORR, aes(x= M1_macrophage, y=new_M1_macrophage))+
+  geom_point()+
+  stat_smooth(method='lm')+
+  theme_bw(base_size = 15)+
+  labs(x='OLD M1 macrophage', y='New M1 macrophage')+
+  stat_cor(label.y =c(0,0), label.x = c(0,0) , method = 'p', cor.coef.name = 'rho', size=5)
+
+ggplot(data=POT_with_variable_by_ORR, aes(x=M1_macrophage, y=effect_size))+
+  geom_point()+
+  stat_smooth(method='lm')+
+  theme_bw(base_size = 15)+
+  labs(x='Macrophage', y='effect_size')+
+  stat_cor(label.y =c(0,0), label.x = c(0,0) , method = 'p', cor.coef.name = 'rho', size=5)
+
+ggplot(data=POT_with_variable_by_ORR, aes(x=new_M1_macrophage, y=effect_size))+
+  geom_point()+
+  stat_smooth(method='lm')+
+  theme_bw(base_size = 15)+
+  labs(x='New Macrophage', y='effect_size')+
+  stat_cor(label.y =c(0,0), label.x = c(0,0) , method = 'p', cor.coef.name = 'rho', size=5)
+```
+
+<!-- Correlation Matrix visualization-->
+```{r}
+modulator_matrix = as.matrix(POT_with_variable_by_OS[3:8],)
+
+corrplot(cor(modulator_matrix),method = 'number',type = "upper", order = "hclust", tl.col="black", tl.srt=30)
+
+jpeg('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/correlation_matrix_4_features.jpeg',
+    height=450, width = 450, units = 'px',quality = 300)
+correlation_matrix= corrplot.mixed(cor(modulator_matrix), tl.col="black",tl.cex= 1, lower.col='black',number.cex= 1)
+
+dev.off()
+```
+
+<!--# multivariate model-->
+```{r}
+# Train the model
+train.control <- trainControl(method = "LOOCV")
+model_OS <- train(effect_size ~ M1_macrophage+ Resting_DC,
+               data = POT_with_variable_by_OS,
+               method = "lm",
+               trControl = train.control)
+
+model_OS$pred
+
+performance_result= cor.test(model_OS$pred$pred,model_OS$pred$obs, method = 's')[4]
+
+model_PFS <- train(effect_size ~ M1_macrophage+ Resting_DC,
+               data = POT_with_variable_by_PFS,
+               method = "lm",
+               trControl = train.control)
+
+model_PFS$results
+
+performance_result1= cor.test(model_PFS$pred$pred,model_PFS$pred$obs, method = 's')[4]
+
+model_ORR <- train(effect_size ~M1_macrophage+ Resting_DC,
+               data = POT_with_variable_by_ORR,
+               method = "lm",
+               trControl = train.control)
+
+model_ORR$pred
+
+performance_result2= cor.test(model_ORR$pred$pred,model_ORR$pred$obs, method = 's')[4]
+
+sum(performance_result$estimate, performance_result1$estimate, performance_result2$estimate)/3
+
+```
+<!--Testing-->
+```{r}
+predict(model_OS, test_df_joo[,c(1,3)])
+
+# testing_features in range
+test_df_2_interpolation = test_df_2[((test_df_2$M1_macrophage > 0.019 & test_df_2$M1_macrophage < 0.085) & (test_df_2$Resting_DC < 0.03)),]
+
+test_df_2_extrapolation = test_df_2[!(rownames(test_df_2) %in% rownames(test_df_2_interpolation)),]
+
+predicted_values= data.frame(predicted_OS_Power_of_TMB= sort(predict(model_OS, test_df_2_interpolation), decreasing = T))
+
+predicted_values_ORR= data.frame(predicted_ORR_Power_of_TMB= sort(predict(model_ORR, test_df_2_extrapolation), decreasing = T))
+# write.csv(predicted_values_ORR, 
+#  file = '/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/Model_prediction_orr.csv')
+
+```
+
+```{r}
+## cervical odds ratio
+CESC_OR = (5/16)/(9/69)
+PRAD
+THCA= (2/2)/(3/78) ### it's too high pred 26 
+
+
+
+
+```
+
+<!--# Visualization-->
+```{r}
+dfplot= model_OS$pred[1:2]
+dfplot$cancertype = rownames(model_OS$pred)
+dfplot$responsetype = "Overall Survival"
+dfplot1 = model_ORR$pred[1:2]
+dfplot1$cancertype = rownames(model_ORR$pred)
+dfplot1$responsetype = "Recist Response"
+# dfplot2 = model_PFS$pred[1:2]
+# dfplot2$cancertype = rownames(model_PFS$pred)
+# dfplot2$responsetype= "PFS"
+
+df2_plot= rbind(dfplot,dfplot1)
+
+
+panel_3= ggplot(df2_plot, aes(x=pred, y= obs))+
+  geom_point()+
+  stat_smooth(method='lm')+
+  facet_wrap(~ responsetype, scales = 'free')+
+  theme_bw(base_size = 15)+
+  labs(x='Predicted Power of TMB\n(M1 Macrophage + Resting Dendritic cells)',
+       y='Power of TMB')+
+  stat_cor(label.y =c(3,2.75), label.x = c(0,0) , method = 's', cor.coef.name = 'rho', size=5)+
+  geom_label_repel(aes(label=df2_plot$cancertype))
+
+ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/model_pred_obs_POT_spearman.pdf', panel_3, height=5, width = 10, units = 'in', dpi = 500)
+
+
+################ lollipop plot for predicted POT
+panel_3_B= ggplot(predicted_values, aes(x = reorder(rownames(predicted_values), predicted_OS_Power_of_TMB), y = predicted_OS_Power_of_TMB)) +  
+  geom_point(stat = "identity", color = "dark blue", size = 6) +
+  geom_hline(yintercept = 1.4, color = "royal blue 1", size = 0.5, linetype= 'dotted')+
+  geom_segment(aes(y = 0,
+                   x =reorder(rownames(predicted_values), predicted_OS_Power_of_TMB),
+                   yend = predicted_OS_Power_of_TMB,
+                   xend =reorder(rownames(predicted_values), predicted_OS_Power_of_TMB) ),
+               color = "black") + #this function creates the lines leading to points
+  theme_bw(base_size = 13)+
+  xlab("Cancer Types")+
+  ylab("Predicted Power of TMB (Using OS)")
+
+ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/lollipop_plot_predicted_POT_values.pdf', panel_3_B, height=5, width = 6, units = 'in', dpi = 500)
+
+```
+<!-- check propotion of  -->
+```{r}
+
+# cancer_types_pro=  mskcc_combined[mskcc_combined$Cancer_Type == "NSCLC",]
+# cancer_types_pro[cancer_types_pro$TMB > 10]
+
+TMB_level_by_cancer_type=table(mskcc_combined$Cancer_Type,(mskcc_combined$TMB >10))
+colnames(TMB_level_by_cancer_type) = c("less_than_10", "greater_than_10")
+ratio_T_F= data.frame(greater_than_10= TMB_level_by_cancer_type[,"greater_than_10"], 
+                      less_than_10= TMB_level_by_cancer_type[,"less_than_10"],
+                      ratio= TMB_level_by_cancer_type[,"greater_than_10"] / 
+                        (TMB_level_by_cancer_type[,"greater_than_10"]+TMB_level_by_cancer_type[,"less_than_10"])
+                      )
+proportion_TMB=ggplot(ratio_T_F, aes(x=reorder(rownames(ratio_T_F), ratio), y= ratio, fill= ratio))+
+  geom_bar(stat = "identity")+
+  theme_bw(base_size = 15)+
+  labs(x='Cancer types',
+       y='Proportion of TMB(>10)')+
+  coord_flip()
+
+ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Proportion_TMB_greater_10.pdf', proportion_TMB, height=5, width = 6, units = 'in', dpi = 500)
+
+
+```
+<!-- Tables-->
+```{r}
+# <!--2277 Sample list-->
+mskcc_combined_used= mskcc_combined[!(mskcc_combined$Cancer_Type %in% c('Gastric','Mesothelioma',"SCLC",'Unknown primary')),]
+
+sample_list=mskcc_combined_used$ID
+write.csv(mskcc_combined_used, file = "/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/mskcc_dataset__used_for_analysis.csv")
+
+
+na.omit(immune_factor[allcancer_types,])
+
+
+
+TCGA_immune_cell = data.frame(t(immune_cells_by_cancerType[!(rownames(immune_cells_by_cancerType) %in% all_cancer_types_trained),]))
+write.csv(TCGA_immune_cell, file = "/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/TCGA_Immune_cell_for_analysis.csv")
+### mean Immune abundance
+
+
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

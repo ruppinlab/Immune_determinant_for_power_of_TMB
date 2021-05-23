@@ -1,0 +1,254 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+<!-- Libraries -->
+```{r}
+require(ggrepel)
+library(corrplot)
+require("survival")
+require(statar)
+library(ggplot2)
+library(ggpubr)
+library(readxl)
+library(tidyr)
+require("survival")
+require("survminer")
+library(caret)
+source('/Users/neelamf2/Downloads/Eytan/myCustom_functions.R')
+setwd('/Users/neelamf2/Downloads/Eytan/fda-tmbCriteria-Power-vs-age-sex/Data/')
+```
+<!-- Load & Preprocess data -->
+```{r}
+setwd('/Users/neelamf2/Downloads/Eytan/fda-tmbCriteria-Power-vs-age-sex/Data/')
+# Ids of patients which are overlap between two phases of MSKCC
+mskcc_supp=data.frame(read_excel('mskcc_sup.xlsx', sheet = 1))
+mskcc_supp$Drug_class[mskcc_supp$Drug_class == "PD-1/PDL-1"] = "PD-1/PD-L1"
+mskcc_sup_pd1=mskcc_supp[grep('PD',mskcc_supp$Drug_class),]
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Bladder Cancer"] = "Bladder"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Breast Cancer"] = "Breast"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Cancer of Unknown Primary"] = "Unknown primary"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Colorectal Cancer"] = "Colorectal"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Esophagogastric Cancer"] = "Esophageal"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Head and Neck Cancer"] = "Head & Neck"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Non-Small Cell Lung Cancer"] = "NSCLC"
+mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Renal Cell Carcinoma"] = "Renal"
+
+# table(mskcc_sup_pd1$Cancer.Type)
+overlap_id= data.frame(read_excel('TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx', sheet = 2))
+# Removing overlap of samstein et al
+ROI=intersect(mskcc_sup_pd1$Sample.ID, overlap_id$IDs.overlapping.with.Samstein.dataset)
+mskcc_sup_no_overlap =mskcc_sup_pd1[!(mskcc_sup_pd1$Sample.ID %in% ROI),]
+table(mskcc_sup_no_overlap$Cancer.Type)
+Valero_ICI = data.frame(read_excel("TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx", sheet = 1))
+# Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Alive"] = 0
+# Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Dead"] = 1
+Valero_ICI$Vital.status[grep("Alive", Valero_ICI$Vital.status,ignore.case = T)] = 0
+Valero_ICI$Vital.status[grep("Dead", Valero_ICI$Vital.status,ignore.case = T)] = 1
+Valero_ICI$Vital.status = as.numeric(Valero_ICI$Vital.status)
+
+colnames(Valero_ICI)[colnames(Valero_ICI) %in% c("TMB..Mutations.Mb.", 
+                                                 "Vital.status", 
+                                                 "Overall.Survival..Months.")] <- c("TMB",
+                                                                                    "Overall_survival_status",
+                                                                                    "Overall_survival_months")
+Valero_ICI= Valero_ICI[!is.na(Valero_ICI$Overall_survival_status),] ### removing Na values of survival status
+Valero_ICI_pd1= Valero_ICI[grep('PD',Valero_ICI$ICI.drug.class),]
+Valero_ICI_pd1$Progression= factor2numeric(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1')))
+Valero_ICI_pd1$Cancer.type[Valero_ICI_pd1$Cancer.type=="CNS"] = "Glioma"
+table(Valero_ICI_pd1$ICI.drug.class)
+dim(Valero_ICI_pd1)
+## for forest plot to check take the sample size
+samples_each_cancer_type=aggregate(ID ~ Cancer.type, Valero_ICI_pd1, length)
+samples_each_cancer_type$cancer_acronym= c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
+                                             'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
+                                             'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
+cancer_Types_of_Interest=samples_each_cancer_type[,3][samples_each_cancer_type[,2]>1]
+
+# Combine the above two datasets
+mskcc_combined= rbind(data.frame(ID= mskcc_sup_no_overlap$Sample.ID,
+                                 Age= mskcc_sup_no_overlap$Age_decade,
+                                 Cancer_Type= mskcc_sup_no_overlap$Cancer.Type,
+                                 Sex= mskcc_sup_no_overlap$GENDER,
+                                 TMB= mskcc_sup_no_overlap$TMB,
+                                 drug= mskcc_sup_no_overlap$Drug_class,## removed MSI information
+                                 year_in_ici= mskcc_sup_no_overlap$Imm_yearbin,
+                                 Overall_survival_status= mskcc_sup_no_overlap$SURVIVAL_EVENT,
+                                 Overall_survival_months= mskcc_sup_no_overlap$SURVIVAL_MONTHS,
+                                 PFS_status= NA,
+                                 PFS_months= NA,
+                                 ORR= NA), 
+                      data.frame(ID= Valero_ICI_pd1$ID,
+                                 Age= Valero_ICI_pd1$Age.at.ICI.start,
+                                 Cancer_Type= Valero_ICI_pd1$Cancer.type,
+                                 Sex= Valero_ICI_pd1$Sex,
+                                 TMB= Valero_ICI_pd1$TMB,
+                                 drug= Valero_ICI_pd1$ICI.drug.class,
+                                 year_in_ici= Valero_ICI_pd1$Year.of.ICI.treatment.start,
+                                 Overall_survival_status= Valero_ICI_pd1$Overall_survival_status,
+                                 Overall_survival_months= Valero_ICI_pd1$Overall_survival_months,
+                                 PFS_status= factor2numeric(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1'))),
+                                 PFS_months= Valero_ICI_pd1$Progression.Free.Survival..Months.,
+                                 ORR= Valero_ICI_pd1$Response.to.ICI)
+                      )
+table(mskcc_combined$Cancer_Type)
+mskcc_combined$Cancer_Type_acronym=NA
+mskcc_combined$Cancer_Type=factor(mskcc_combined$Cancer_Type)
+mskcc_combined$Cancer_Type_acronym=mskcc_combined$Cancer_Type
+levels(mskcc_combined$Cancer_Type_acronym)=c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
+                                             'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
+                                             'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
+samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length)
+cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
+```
+
+
+<!-- Functions needed -->
+```{r}
+# Calculates TMB and Response assocaition
+Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
+                                             COI="NSCLC",
+                                             response_measure='ORR'){
+  infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type_acronym == COI)),]
+  #infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
+  
+  if(response_measure=='ORR'){
+    infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+    # Contigency matrix
+    cont_matrix=table( infunc_df_tmb$TMB>=10, infunc_df_tmb$ORR)
+    # Perform fisher test
+    fisher_test_results_raw=fisher.test(cont_matrix)
+    to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
+                P=fisher_test_results_raw$p.value)
+  } else if(response_measure =='OS') {
+    infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
+    # Perform coxph test
+    coxph_model <- coxph(Surv(time = Overall_survival_months,
+                              event = Overall_survival_status) ~ (TMB >= 10) ,
+                         data = infunc_df_tmb)
+    to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+                P=summary(coxph_model)$coefficients[1,c(5)])
+  }  else if(response_measure=='PFS') {
+    infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
+    coxph_model <- coxph(Surv(time = PFS_months,
+                              event = PFS_status) ~ (TMB>=10) ,
+                         data = infunc_df_tmb)
+    to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+                P=summary(coxph_model)$coefficients[1,c(5)])
+  }
+  names(to_return)=c('effect_size', 'P')
+  to_return
+}
+```
+
+```{r}
+## Cancer types with sample > 50
+
+# COI= intersect(allcancer_types,cancer_of_interest)
+# GIven a set of cancer types & Immuen matrix
+# Tmb_Resp_Association - Or TRA
+create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
+                                           infunc_immune_matrix=immune_factor,
+                                           infun_Tmb_Resp_Association = ORR_difference,
+                                           response_type='ORR',
+                                           consider_cancer_type='all_cancerTypes', 
+                                           infunc_title='All cancerTypes'){
+  infun_Tmb_Resp_Association=infun_Tmb_Resp_Association[
+    !is.na(infun_Tmb_Resp_Association[,1]) & is.finite(infun_Tmb_Resp_Association[,1]),]
+  infunc_cancer_types_filtered=intersect(rownames(infun_Tmb_Resp_Association),
+                                         infunc_cancer_types)
+  infunc_immune_matrix_filtered= infunc_immune_matrix[,!colSums(infunc_immune_matrix!= 0) <= 8]
+  #filtered_features_resp = features_resp[,!colSums(features_resp!= 0) <= 5 ] ## filter to remove features with high number of zeroes
+  
+  ## Correlation 
+  # features_resp= infunc_immune_matrix[na.omit(match(infunc_cancer_types_filtered,
+  #                                               rownames(infunc_immune_matrix))),]
+  
+  filtered_features_resp = infunc_immune_matrix_filtered[na.omit(match(infunc_cancer_types_filtered,
+                                                rownames(infunc_immune_matrix_filtered))),]
+  
+  target_resp= infun_Tmb_Resp_Association[rownames(filtered_features_resp),'effect_size']
+  
+  # cor.test(features_resp[,2],target_resp)
+  correlation_matrix= data.frame(t(apply(filtered_features_resp, 2, function(x)
+    unlist(cor.test(x, target_resp, method = 's')[c(3, 4)])) ))
+  correlation_matrix=na.omit(correlation_matrix[order(correlation_matrix[,2],decreasing = T),])
+
+  correlation_matrix$immune_factors=gsub('\\.',' ',gsub('\\.\\.',' ',rownames(correlation_matrix)))
+  # print(correlation_matrix[order(abs(correlation_matrix[,2]), decreasing = T),])
+    
+  Panel2 <- ggplot(data=correlation_matrix, aes(x=reorder(immune_factors, estimate.rho),
+                                                  y=estimate.rho
+                                                  # , color= p.value <0.05
+                                                  ))+
+      geom_bar(aes(fill= estimate.rho),stat="identity")+
+      scale_fill_gradient2(low = "red",mid = "dark grey",high = "dark green")+
+      coord_flip() + # horizontal bars  
+      geom_text(aes(y = 0, label = immune_factors, hjust = as.numeric(estimate.rho > 0))) +  # label text based on value
+      theme_bw(base_size = 18)+
+      theme(axis.text.y = element_blank(), legend.position="top",
+            plot.title = element_text(color="red", size=14, face="bold.italic"))+
+      labs(x='Immune Factors', y=paste('Spearman correlation with Power of TMB \n(using ',response_type,')',sep='' ))+
+      ggtitle(infunc_title)
+  ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/tmb-responseVSTME_factors',
+               consider_cancer_type,'_',
+               response_type,'.pdf', sep ='' ),
+         Panel2, height=7, width = 6, units = 'in', dpi = 500)
+  list(correlation_matrix, Panel2)
+}
+#Mean_NLR$acro=response_result_with_TMB$cancer_acorymn
+
+
+```
+
+```{r}
+create_scatter_plot<- function(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[37]){
+  df2plot=data.frame(infun_Tmb_Resp_Association[infunc_cancer_types,],
+             features_resp= infunc_immune_matrix[infunc_cancer_types,immune_feature_of_interest])
+  df2plot=na.omit(df2plot)
+  Panel3 <- ggplot(df2plot, aes(x=rank(effect_size), y=rank(features_resp), size= -log(P, 10) )) + 
+    stat_smooth(method='lm')+
+    geom_point()+
+    theme_bw(base_size = 15)+
+    # theme(legend.position = 'none')+
+    labs(x='Power of TMB (rank)',
+         y=paste(gsub('\\.',' ',immune_feature_of_interest),  '(rank)'), size='-log10(P)')+
+    stat_cor(label.y = 0, label.x = 5, method = 'p', cor.coef.name = 'rho', size=5)+
+    geom_label_repel(aes(label=rownames(df2plot), size=0.5), show.legend = F)+
+    coord_flip()
+  ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/tmb-responseVS',
+               immune_feature_of_interest,
+               consider_cancer_type,'_',
+               response_type,'.pdf', sep ='' ),
+         Panel3, height=5, width = 5, units = 'in', dpi = 500)
+  # list(correlation_matrix, Panel3)
+}
+```
+
+```{r}
+mean_NLR$Cancer_Type_acronym=levels(mskcc_combined$Cancer_Type_acronym)[match(mean_NLR$`Cancer type`, levels(mskcc_combined$Cancer_Type))]
+immune_factor$blood_NLR=mean_NLR$NLR[match(rownames(immune_factor), mean_NLR$Cancer_Type_acronym)]
+
+coi=intersect(rownames(ORR_difference),mean_NLR$Cancer_Type_acronym)
+cor.test(mean_NLR$NLR[match(coi, mean_NLR$Cancer_Type_acronym)],
+         unlist(ORR_difference[coi,1]))
+
+cor.test(immune_factor$blood_NLR, immune_factor$ORR.)
+
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

@@ -1,0 +1,300 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+<!-- Calculate Response difference btw tmb-high vs low group-->
+```{r}
+allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
+
+ORR_difference=do.call(rbind, sapply(allcancer_types, function(x)
+  err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                response_measure='ORR')) ))
+
+OS_difference=do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                response_measure='OS'))) )
+## 1/HR to keep same direction
+OS_difference <- data.frame(OS_difference)
+OS_difference$effect_size= 1/OS_difference$effect_size
+rownames(OS_difference)=allcancer_types
+
+PFS_difference=do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                response_measure='PFS'))) )
+PFS_difference <- data.frame(PFS_difference)
+PFS_difference$effect_size= 1/PFS_difference$effect_size
+rownames(PFS_difference)=allcancer_types
+```
+<!-- Immune determinants of tmb-response association Part 1: ORR-->
+```{r}
+Fig_ORR_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
+                                                        infunc_immune_matrix=immune_factor,
+                                                        infun_Tmb_Resp_Association = ORR_difference,
+                                                        response_type='ORR',
+                                                        consider_cancer_type='all_cancerTypes',
+                                                        infunc_title = 'All Cancer Types')
+
+Fig_ORR_Only_Sig_Tmb.Resp_associated_cancerTypes=create_corr_with_Immune_factors(
+  infunc_cancer_types=allcancer_types[which(ORR_difference[,2]/2<0.1)],
+  infunc_immune_matrix=immune_factor,
+  infun_Tmb_Resp_Association = ORR_difference,
+  response_type='ORR',
+  consider_cancer_type='Only_Sig_Tmb.Resp_associated_cancerTypes',
+  infunc_title = 'Cancer types with Sig Power of TMB')
+
+combined_ORR=ggarrange(Fig_ORR_allcancer_types[[2]], 
+                       Fig_ORR_Only_Sig_Tmb.Resp_associated_cancerTypes[[2]], 
+                       common.legend = T)
+ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Fig1A_tmb-ORR_associationVSTME_factors',
+             '.pdf', sep ='' ),
+       combined_ORR, height=7, width = 12, units = 'in', dpi = 500)
+
+```
+<!-- Immune determinants of tmb-response association Part 2: OS-->
+```{r}
+Fig_OS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
+                                infunc_immune_matrix=immune_factor,
+                                infun_Tmb_Resp_Association = OS_difference,
+                                response_type='OS',
+                                consider_cancer_type='all_cancerTypes',
+                                infunc_title = 'All Cancer Types')
+
+Fig_OS_Only_Sig_Tmb.Resp_associated_cancerTypes=create_corr_with_Immune_factors(
+  infunc_cancer_types=allcancer_types[which(OS_difference[,2]/2<0.1)],
+  infunc_immune_matrix=immune_factor,
+  infun_Tmb_Resp_Association = OS_difference,
+  response_type='OS',
+  consider_cancer_type='Only_Sig_Tmb.Resp_associated_cancerTypes',
+  infunc_title = 'Cancer types with Sig tmb-resp Association')
+
+combined_OS=ggarrange(Fig_OS_allcancer_types[[2]], 
+                       Fig_OS_Only_Sig_Tmb.Resp_associated_cancerTypes[[2]], 
+                       common.legend = T)
+ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Fig1B_tmb-OS_associationVSTME_factors',
+             '.pdf', sep ='' ),
+       combined_OS, height=7, width = 12, units = 'in', dpi = 500)
+
+
+```
+<!-- Immune determinants of tmb-response association Part 3: PFS-->
+```{r}
+Fig_PFS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
+                                infunc_immune_matrix=immune_factor,
+                                infun_Tmb_Resp_Association = PFS_difference,
+                                response_type='PFS',
+                                consider_cancer_type='all_cancerTypes',
+                                infunc_title = 'All Cancer Types')
+
+Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes=create_corr_with_Immune_factors(
+  infunc_cancer_types=allcancer_types[which(PFS_difference[,2]/2<0.1)],
+  infunc_immune_matrix=immune_factor,
+  infun_Tmb_Resp_Association = PFS_difference,
+  response_type='PFS',
+  consider_cancer_type='Only_Sig_Tmb.Resp_associated_cancerTypes',
+  infunc_title = 'Cancer types with Sig tmb-resp Association')
+combined_PFS=ggarrange(Fig_PFS_allcancer_types[[2]], 
+                       Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[2]], 
+                       common.legend = T)
+
+ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures//Fig1C_tmb-PFS_associationVSTME_factors',
+             '.pdf', sep ='' ),
+       combined_PFS, height=7, width = 12, units = 'in', dpi = 500)
+```
+<!-- Scatter plot for 5 modulators: using OS-->
+```{r}
+Modulator_1= create_scatter_plot(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[22])
+Modulator_2= create_scatter_plot(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[39])
+Modulator_3= create_scatter_plot(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[24])
+Modulator_4= create_scatter_plot(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[25])
+Modulator_5= create_scatter_plot(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[37])
+
+
+combined_fig = ggarrange(Modulator_1[[2]],
+                         Modulator_2[[2]],
+                         Modulator_3[[2]],
+                         Modulator_4[[2]],
+                         Modulator_5[[2]],labels = c("C","D","E","F","G"),
+                         legend ="top", common.legend = T, ncol = 5)
+combined_fig
+ ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/scatter_plot_5_modulators.tiff',
+         combined_fig, height=5, width = 20, dpi = 500)
+```
+
+```{r}
+df2plot=data.frame(allcancer_types,OS_difference[allcancer_types,],
+                     immune_factor[allcancer_types,c(22,39,24,37)])
+df2plot= na.omit(df2plot)
+df2plot= df2plot[is.finite(df2plot$effect_size),]
+df2plot$rank= rank(df2plot$effect_size)
+df2plot_long= gather(df2plot, modulator_name, abundance,
+                      M1.macrophage.:PDL1..combined.positive.score.,factor_key = T )
+
+df2plot_long$modulator_name= ifelse(df2plot_long$modulator_name == "M1.macrophage.", "M1 macrophage", 
+                                    ifelse(df2plot_long$modulator_name == "Tumor.purity.", "Tumor purity",
+                                           ifelse(df2plot_long$modulator_name == "Resting.dendritic.cells."
+                                                  ,"Resting dendritic cells", 
+                                                 ifelse(df2plot_long$modulator_name == "Active.dendritic.cells.",
+                                                  "Active dendritic cells", "PDL1 combined positive score"))))
+
+df2plot_long$Modulator_type = ifelse(df2plot_long$modulator_name %in% 
+                                     c("M1 macrophage","Tumor purity"), 
+                                     "Positive modulator", 
+                                     "Negative modulator")
+
+
+# unlist(lapply(split(df2plot_long, df2plot_long$modulator_name), function(x) rank(x[,6])))
+
+df2plot_long= df2plot_long[order(df2plot_long$modulator_name),]
+df2plot_long$modulator_rank= unlist(lapply(split(df2plot_long, df2plot_long$modulator_name), function(x) rank(x[,6])))
+
+df2plot_pearson= df2plot_long[!(df2plot_long$allcancer_types %in% c('KIRC')),]
+
+Panel3 <- ggplot(df2plot_pearson, aes(x=effect_size, y= abundance, size= -log(P, 10))) + 
+  stat_smooth(method='lm')+
+  facet_wrap(~ Modulator_type+modulator_name, scales = 'free')+
+  geom_point()+
+  theme_bw(base_size = 15)+
+    # theme(legend.position = 'none')+
+  labs(x='Power of TMB (rank)',
+         y=paste('Abundance'), size='-log10(P)')+
+  # stat_cor( method = 's', cor.coef.name = 'rho', size=5)+
+  geom_label_repel(aes(label=(df2plot_pearson$allcancer_types), size=0.9))+
+  coord_flip()
+  ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/OS_Power_of_TMB_in_5_abu_modulators_spear.pdf',
+         Panel3, height=10, width = 9, units = 'in', dpi = 500)
+  list(correlation_matrix, Panel3)
+
+```
+
+```{r}
+features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]])
+df_all_cor=data.frame(features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]]),
+           pfs_Sig=Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]][features,]$estimate.rho, 
+           pfs_all=Fig_PFS_allcancer_types[[1]][features,]$estimate.rho,
+           os_sig=Fig_OS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]][features,]$estimate.rho, 
+           os_all=Fig_OS_allcancer_types[[1]][features,]$estimate.rho,
+           orr_sig= Fig_ORR_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]][features,]$estimate.rho,
+           orr_all = Fig_ORR_allcancer_types[[1]][features,]$estimate.rho)
+df_all_cor[,1]=gsub('\\.',' ',gsub('\\.\\.',' ',df_all_cor[,1]))
+features_ranked=df_all_cor[order(rowMeans(apply(abs(df_all_cor[,-1]), 2, rank)), decreasing = T),1]
+mean(unlist(df_all_cor[df_all_cor$features=='NTL',-1]))
+mean(unlist(df_all_cor[grep('Combined',df_all_cor$features, ignore.case = T),-1]))
+df_all_cor
+ranked_score_top_mods=apply(abs(df_all_cor[,-1]), 2, rank)[df_all_cor[,1] %in% head(features_ranked, 5),]
+round(rowMeans(df_all_cor[match(head(features_ranked, 5), df_all_cor[,1]),-1]), 2)
+
+top_Modulators=data.frame(Modulators=head(features_ranked, 5),
+                          PFS=ceiling(rowMeans(ranked_score_top_mods[,1:2])),
+                          OS=ceiling(rowMeans(ranked_score_top_mods[,3:4])),
+                          ORR=ceiling(rowMeans(ranked_score_top_mods[,5:6])),
+                          mean_corr= )
+#write.csv(top_Modulators,'/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Data/top_Modulators_Mar1.csv')
+```
+
+```{r}
+MeanCorr_df=data.frame(Modulators=df_all_cor[,1],
+                       PFS=rowMeans(df_all_cor[,2:3]),
+                       OS=rowMeans(df_all_cor[,4:5]),
+                       durable_response=rowMeans(df_all_cor[,2:5]),
+                       ORR= rowMeans(df_all_cor[,6:7]))
+MeanCorr_df$mod_labels=''
+MeanCorr_df$mod_labels[match(head(features_ranked)[c(1,2,3,5)],MeanCorr_df$Modulators)]=head(features_ranked)[c(1,2,3,5)]
+
+panel4=ggplot(MeanCorr_df, aes(x=ORR, y=durable_response, label=mod_labels))+
+  geom_point(aes(color= mod_labels!=''))+
+  geom_label_repel(min.segment.length = 0, size=3)+
+  theme_bw(base_size = 10)+
+  scale_color_manual(values = c("darkgrey","blue"))+
+  labs(x='Correlation strength with TMB Power (Using ORR)',
+       y='Correlation strength with TMB Power (Using OS/PFS)')+
+  theme(legend.position = 'none')
+  
+ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Panel_2_C.pdf', panel4, height=4, width = 4, units = 'in', dpi = 500)
+
+
+```
+
+```{r}
+Response_ratio_all_Three=read.csv('/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Tools/fda-tmbCriteria-Power-vs-age-sex/Data/Response_ratio_all_Three.csv')
+Response_ratio_all_Three_list=split(Response_ratio_all_Three, Response_ratio_all_Three$Resp_Measure)
+cellTYpes_available=Response_ratio_all_Three_list[[1]]$cellType
+for_OR=Response_ratio_all_Three_list[[1]][match(cellTYpes_available, Response_ratio_all_Three_list[[1]]$cellType),]
+rownames(for_OR)=for_OR$cellType
+for_OS=Response_ratio_all_Three_list[[2]][match(cellTYpes_available, Response_ratio_all_Three_list[[2]]$cellType),]
+rownames(for_OS)=for_OS$cellType
+for_PFS=Response_ratio_all_Three_list[[3]][match(cellTYpes_available, Response_ratio_all_Three_list[[3]]$cellType),]
+rownames(for_PFS)=for_PFS$cellType
+```
+
+```{r}
+modulator_cells=MeanCorr_df$Modulators[c(1, 2, 3, 4, 12, 14, 15, 17, 19, 20, 21, 25, 28, 29, 30, 31, 34, 35, 36)]
+match(stripall2match(modulator_cells), stripall2match(for_OS$cellType))
+
+df2plot=data.frame(modulator=for_OS$cellType,
+           hr_os=for_OS$HR_Ratio,
+           hr_or=for_OR$HR_Ratio, 
+           hr_pfs=for_PFS$HR_Ratio)
+df2plot$toplot=''
+df2plot$toplot[match(c("Dendritic.cells.activated", "Dendritic.cells.resting",
+                       "Macrophages.M1"), 
+                     df2plot$modulator)]=c("Dendritic.cells.activated", "Dendritic.cells.resting",
+                       "Macrophages.M1")
+df2plot$durable_hr=rowMeans(data.frame(df2plot$hr_os,df2plot$hr_pfs))
+
+panle5=ggplot(df2plot, aes(x= rank(hr_or), y=rank(hr_pfs), label=toplot))+
+    geom_point()+
+    geom_label_repel()+
+    theme_bw(base_size = 15)+
+  labs(x='Ratio of odds ratio (TMB-ICB response) between \nhigh vs low modulator levels group',
+       y='Ratio of hazard ratio (TMB-ICB OS/PFS) between \nhigh vs low modulator levels group')
+
+ggsave(paste('/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Results_Figures/Panel5.tiff', sep ='' ),
+       panle5, height=6, width = 6, units = 'in', dpi = 500)
+
+
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
