@@ -1,11 +1,13 @@
 ---
 title: "R Notebook"
+## title: "Implementation and Figures: panel_2 and panel_5(ex_fig_2)"
 output: html_notebook
 ---
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressi_ng *Cmd+Shift+Enter*. 
+<!-- Run s0 and s1 to load and preprocess the data and functions required-->
 <!-- Calculate Response difference btw tmb-high vs low group-->
 ```{r}
 allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
@@ -19,7 +21,7 @@ OS_difference=do.call(rbind, lapply(allcancer_types, function(x)
   err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
                                                 COI=x,
                                                 response_measure='OS'))) )
-## 1/HR to keep same direction
+## 1/HR to keep same direction for TMB power
 OS_difference <- data.frame(OS_difference)
 OS_difference$effect_size= 1/OS_difference$effect_size
 rownames(OS_difference)=allcancer_types
@@ -32,6 +34,7 @@ PFS_difference <- data.frame(PFS_difference)
 PFS_difference$effect_size= 1/PFS_difference$effect_size
 rownames(PFS_difference)=allcancer_types
 ```
+<!-- Figure 2B and extended_figure 2C-->
 <!-- Immune determinants of tmb-response association Part 1: ORR-->
 ```{r}
 Fig_ORR_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
@@ -57,6 +60,7 @@ ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_T
        combined_ORR, height=7, width = 12, units = 'in', dpi = 500)
 
 ```
+<!-- Figure 2A and extended_figure 2B-->
 <!-- Immune determinants of tmb-response association Part 2: OS-->
 ```{r}
 Fig_OS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
@@ -83,6 +87,7 @@ ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_T
 
 
 ```
+<!-- extended_figure 2A-->
 <!-- Immune determinants of tmb-response association Part 3: PFS-->
 ```{r}
 Fig_PFS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
@@ -156,7 +161,7 @@ combined_fig
  ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/scatter_plot_5_modulators.tiff',
          combined_fig, height=5, width = 20, dpi = 500)
 ```
-
+<!-- Figure 2D (panel2)-->
 ```{r}
 df2plot=data.frame(allcancer_types,OS_difference[allcancer_types,],
                      immune_factor[allcancer_types,c(22,39,24,37)])
@@ -186,7 +191,7 @@ df2plot_long$modulator_rank= unlist(lapply(split(df2plot_long, df2plot_long$modu
 
 df2plot_pearson= df2plot_long[!(df2plot_long$allcancer_types %in% c('KIRC')),]
 
-Panel3 <- ggplot(df2plot_pearson, aes(x=effect_size, y= abundance, size= -log(P, 10))) + 
+Panel2_D <- ggplot(df2plot_pearson, aes(x=effect_size, y= abundance, size= -log(P, 10))) + 
   stat_smooth(method='lm')+
   facet_wrap(~ Modulator_type+modulator_name, scales = 'free')+
   geom_point()+
@@ -198,8 +203,7 @@ Panel3 <- ggplot(df2plot_pearson, aes(x=effect_size, y= abundance, size= -log(P,
   geom_label_repel(aes(label=(df2plot_pearson$allcancer_types), size=0.9))+
   coord_flip()
   ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/OS_Power_of_TMB_in_5_abu_modulators_spear.pdf',
-         Panel3, height=10, width = 9, units = 'in', dpi = 500)
-  list(correlation_matrix, Panel3)
+         Panel2_D, height=10, width = 9, units = 'in', dpi = 500)
 
 ```
 
@@ -214,20 +218,12 @@ df_all_cor=data.frame(features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_can
            orr_all = Fig_ORR_allcancer_types[[1]][features,]$estimate.rho)
 df_all_cor[,1]=gsub('\\.',' ',gsub('\\.\\.',' ',df_all_cor[,1]))
 features_ranked=df_all_cor[order(rowMeans(apply(abs(df_all_cor[,-1]), 2, rank)), decreasing = T),1]
-mean(unlist(df_all_cor[df_all_cor$features=='NTL',-1]))
 mean(unlist(df_all_cor[grep('Combined',df_all_cor$features, ignore.case = T),-1]))
 df_all_cor
 ranked_score_top_mods=apply(abs(df_all_cor[,-1]), 2, rank)[df_all_cor[,1] %in% head(features_ranked, 5),]
 round(rowMeans(df_all_cor[match(head(features_ranked, 5), df_all_cor[,1]),-1]), 2)
-
-top_Modulators=data.frame(Modulators=head(features_ranked, 5),
-                          PFS=ceiling(rowMeans(ranked_score_top_mods[,1:2])),
-                          OS=ceiling(rowMeans(ranked_score_top_mods[,3:4])),
-                          ORR=ceiling(rowMeans(ranked_score_top_mods[,5:6])),
-                          mean_corr= )
-#write.csv(top_Modulators,'/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Data/top_Modulators_Mar1.csv')
 ```
-
+<!-- Figure 2C (Panel2)-->
 ```{r}
 MeanCorr_df=data.frame(Modulators=df_all_cor[,1],
                        PFS=rowMeans(df_all_cor[,2:3]),
@@ -237,7 +233,7 @@ MeanCorr_df=data.frame(Modulators=df_all_cor[,1],
 MeanCorr_df$mod_labels=''
 MeanCorr_df$mod_labels[match(head(features_ranked)[c(1,2,3,5)],MeanCorr_df$Modulators)]=head(features_ranked)[c(1,2,3,5)]
 
-panel4=ggplot(MeanCorr_df, aes(x=ORR, y=durable_response, label=mod_labels))+
+panel2_C=ggplot(MeanCorr_df, aes(x=ORR, y=durable_response, label=mod_labels))+
   geom_point(aes(color= mod_labels!=''))+
   geom_label_repel(min.segment.length = 0, size=3)+
   theme_bw(base_size = 10)+
@@ -246,7 +242,7 @@ panel4=ggplot(MeanCorr_df, aes(x=ORR, y=durable_response, label=mod_labels))+
        y='Correlation strength with TMB Power (Using OS/PFS)')+
   theme(legend.position = 'none')
   
-ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Panel_2_C.pdf', panel4, height=4, width = 4, units = 'in', dpi = 500)
+ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Panel_2_C.pdf', panel2_C, height=4, width = 4, units = 'in', dpi = 500)
 
 
 ```
