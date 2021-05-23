@@ -39,7 +39,8 @@ overlap_id= data.frame(read_excel('TMB_and_outcomes_in_patients_treated_with_ICI
 # Removing overlap of samstein et al
 ROI=intersect(mskcc_sup_pd1$Sample.ID, overlap_id$IDs.overlapping.with.Samstein.dataset)
 mskcc_sup_no_overlap =mskcc_sup_pd1[!(mskcc_sup_pd1$Sample.ID %in% ROI),]
-table(mskcc_sup_no_overlap$Cancer.Type)
+
+## Loading mskcc_2's et al data
 Valero_ICI = data.frame(read_excel("TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx", sheet = 1))
 # Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Alive"] = 0
 # Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Dead"] = 1
@@ -56,8 +57,7 @@ Valero_ICI= Valero_ICI[!is.na(Valero_ICI$Overall_survival_status),] ### removing
 Valero_ICI_pd1= Valero_ICI[grep('PD',Valero_ICI$ICI.drug.class),]
 Valero_ICI_pd1$Progression= factor2numeric(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1')))
 Valero_ICI_pd1$Cancer.type[Valero_ICI_pd1$Cancer.type=="CNS"] = "Glioma"
-table(Valero_ICI_pd1$ICI.drug.class)
-dim(Valero_ICI_pd1)
+
 ## for forest plot to check take the sample size
 samples_each_cancer_type=aggregate(ID ~ Cancer.type, Valero_ICI_pd1, length)
 samples_each_cancer_type$cancer_acronym= c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
@@ -91,7 +91,6 @@ mskcc_combined= rbind(data.frame(ID= mskcc_sup_no_overlap$Sample.ID,
                                  PFS_months= Valero_ICI_pd1$Progression.Free.Survival..Months.,
                                  ORR= Valero_ICI_pd1$Response.to.ICI)
                       )
-table(mskcc_combined$Cancer_Type)
 mskcc_combined$Cancer_Type_acronym=NA
 mskcc_combined$Cancer_Type=factor(mskcc_combined$Cancer_Type)
 mskcc_combined$Cancer_Type_acronym=mskcc_combined$Cancer_Type
@@ -103,7 +102,7 @@ cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]>
 ```
 
 
-<!-- Functions needed -->
+<!-- Functions needed-->
 ```{r}
 # Calculates TMB and Response assocaition
 Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
@@ -142,10 +141,7 @@ Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
 ```
 
 ```{r}
-## Cancer types with sample > 50
-
-# COI= intersect(allcancer_types,cancer_of_interest)
-# GIven a set of cancer types & Immuen matrix
+# Given a set of cancer types & Immuen matrix
 # Tmb_Resp_Association - Or TRA
 create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
                                            infunc_immune_matrix=immune_factor,
@@ -157,13 +153,10 @@ create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
     !is.na(infun_Tmb_Resp_Association[,1]) & is.finite(infun_Tmb_Resp_Association[,1]),]
   infunc_cancer_types_filtered=intersect(rownames(infun_Tmb_Resp_Association),
                                          infunc_cancer_types)
+  ## filter to remove features with high number of zeroes
   infunc_immune_matrix_filtered= infunc_immune_matrix[,!colSums(infunc_immune_matrix!= 0) <= 8]
-  #filtered_features_resp = features_resp[,!colSums(features_resp!= 0) <= 5 ] ## filter to remove features with high number of zeroes
   
-  ## Correlation 
-  # features_resp= infunc_immune_matrix[na.omit(match(infunc_cancer_types_filtered,
-  #                                               rownames(infunc_immune_matrix))),]
-  
+  ## Correlation
   filtered_features_resp = infunc_immune_matrix_filtered[na.omit(match(infunc_cancer_types_filtered,
                                                 rownames(infunc_immune_matrix_filtered))),]
   
@@ -175,7 +168,6 @@ create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
   correlation_matrix=na.omit(correlation_matrix[order(correlation_matrix[,2],decreasing = T),])
 
   correlation_matrix$immune_factors=gsub('\\.',' ',gsub('\\.\\.',' ',rownames(correlation_matrix)))
-  # print(correlation_matrix[order(abs(correlation_matrix[,2]), decreasing = T),])
     
   Panel2 <- ggplot(data=correlation_matrix, aes(x=reorder(immune_factors, estimate.rho),
                                                   y=estimate.rho
@@ -196,9 +188,6 @@ create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
          Panel2, height=7, width = 6, units = 'in', dpi = 500)
   list(correlation_matrix, Panel2)
 }
-#Mean_NLR$acro=response_result_with_TMB$cancer_acorymn
-
-
 ```
 
 ```{r}
@@ -230,20 +219,6 @@ create_scatter_plot<- function(infunc_cancer_types=allcancer_types,
   # list(correlation_matrix, Panel3)
 }
 ```
-
-```{r}
-mean_NLR$Cancer_Type_acronym=levels(mskcc_combined$Cancer_Type_acronym)[match(mean_NLR$`Cancer type`, levels(mskcc_combined$Cancer_Type))]
-immune_factor$blood_NLR=mean_NLR$NLR[match(rownames(immune_factor), mean_NLR$Cancer_Type_acronym)]
-
-coi=intersect(rownames(ORR_difference),mean_NLR$Cancer_Type_acronym)
-cor.test(mean_NLR$NLR[match(coi, mean_NLR$Cancer_Type_acronym)],
-         unlist(ORR_difference[coi,1]))
-
-cor.test(immune_factor$blood_NLR, immune_factor$ORR.)
-
-```
-
-
 
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
