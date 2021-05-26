@@ -66,18 +66,6 @@ test_df_2= test_df_2[!(rownames(test_df_2) %in% c('LUAD','LUSC')),]
 colnames(test_df_2)=c("M1_macrophage",'Resting_DC') 
 
 ```
-
-```{r}
-################################################################
-## rank the variables
-################################################################
-# POT_with_variable$rank_effect_size= rank(POT_with_variable$effect_size)
-# POT_with_variable$rank_m1_macrophage= rank(POT_with_variable$M1.macrophage.)
-# POT_with_variable$rank_Tumor_purity= rank(POT_with_variable$Tumor.purity.)
-# POT_with_variable$rank_resting_DC= rank(POT_with_variable$Resting.dendritic.cells.)
-# POT_with_variable$rank_pd1_CPS= rank(POT_with_variable$PDL1..combined.positive.score.)
-```
-
 <!--Sanity check for modulator calculated by joo and from TCGA-->
 ```{r}
 range(POT_with_variable_by_ORR$M1_macrophage)
@@ -115,14 +103,12 @@ ggplot(data=POT_with_variable_by_ORR, aes(x=new_M1_macrophage, y=effect_size))+
   stat_cor(label.y =c(0,0), label.x = c(0,0) , method = 'p', cor.coef.name = 'rho', size=5)
 ```
 
-<!-- Correlation Matrix visualization-->
+<!-- Correlation Matrix plot-->
 ```{r}
-modulator_matrix = as.matrix(POT_with_variable_by_OS[3:8],)
+modulator_matrix = as.matrix(POT_with_variable_by_OS[3:6],)
 
-corrplot(cor(modulator_matrix),method = 'number',type = "upper", order = "hclust", tl.col="black", tl.srt=30)
+jpeg('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/correlation_matrix_features.jpeg',height=450, width = 450, units = 'px',quality = 300)
 
-jpeg('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/correlation_matrix_4_features.jpeg',
-    height=450, width = 450, units = 'px',quality = 300)
 correlation_matrix= corrplot.mixed(cor(modulator_matrix), tl.col="black",tl.cex= 1, lower.col='black',number.cex= 1)
 
 dev.off()
@@ -136,28 +122,22 @@ model_OS <- train(effect_size ~ M1_macrophage+ Resting_DC,
                data = POT_with_variable_by_OS,
                method = "lm",
                trControl = train.control)
+performance_result_OS= cor.test(model_OS$pred$pred,model_OS$pred$obs, method = 's')[4]
 
-model_OS$pred
-
-performance_result= cor.test(model_OS$pred$pred,model_OS$pred$obs, method = 's')[4]
 
 model_PFS <- train(effect_size ~ M1_macrophage+ Resting_DC,
                data = POT_with_variable_by_PFS,
                method = "lm",
                trControl = train.control)
+performance_result_PFS= cor.test(model_PFS$pred$pred,model_PFS$pred$obs, method = 's')[4]
 
-model_PFS$results
-
-performance_result1= cor.test(model_PFS$pred$pred,model_PFS$pred$obs, method = 's')[4]
 
 model_ORR <- train(effect_size ~M1_macrophage+ Resting_DC,
                data = POT_with_variable_by_ORR,
                method = "lm",
                trControl = train.control)
 
-model_ORR$pred
-
-performance_result2= cor.test(model_ORR$pred$pred,model_ORR$pred$obs, method = 's')[4]
+performance_result_ORR= cor.test(model_ORR$pred$pred,model_ORR$pred$obs, method = 's')[4]
 
 sum(performance_result$estimate, performance_result1$estimate, performance_result2$estimate)/3
 
@@ -173,52 +153,31 @@ test_df_2_extrapolation = test_df_2[!(rownames(test_df_2) %in% rownames(test_df_
 
 predicted_values= data.frame(predicted_OS_Power_of_TMB= sort(predict(model_OS, test_df_2_interpolation), decreasing = T))
 
-predicted_values_ORR= data.frame(predicted_ORR_Power_of_TMB= sort(predict(model_ORR, test_df_2_extrapolation), decreasing = T))
-# write.csv(predicted_values_ORR, 
-#  file = '/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/Model_prediction_orr.csv')
+write.csv(predicted_values,
+ file = '/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/Model_prediction_orr.csv')
 
 ```
 
-```{r}
-## cervical odds ratio
-CESC_OR = (5/16)/(9/69)
-PRAD
-THCA= (2/2)/(3/78) ### it's too high pred 26 
-
-
-
-
-```
-
-<!--# Visualization-->
+<!--# Panel_3 scatter plot-->
 ```{r}
 dfplot= model_OS$pred[1:2]
 dfplot$cancertype = rownames(model_OS$pred)
 dfplot$responsetype = "Overall Survival"
-dfplot1 = model_ORR$pred[1:2]
-dfplot1$cancertype = rownames(model_ORR$pred)
-dfplot1$responsetype = "Recist Response"
-# dfplot2 = model_PFS$pred[1:2]
-# dfplot2$cancertype = rownames(model_PFS$pred)
-# dfplot2$responsetype= "PFS"
 
-df2_plot= rbind(dfplot,dfplot1)
-
-
-panel_3= ggplot(df2_plot, aes(x=pred, y= obs))+
+panel_3_A= ggplot(dfplot, aes(x=pred, y= obs))+
   geom_point()+
   stat_smooth(method='lm')+
-  facet_wrap(~ responsetype, scales = 'free')+
   theme_bw(base_size = 15)+
   labs(x='Predicted Power of TMB\n(M1 Macrophage + Resting Dendritic cells)',
        y='Power of TMB')+
   stat_cor(label.y =c(3,2.75), label.x = c(0,0) , method = 's', cor.coef.name = 'rho', size=5)+
-  geom_label_repel(aes(label=df2_plot$cancertype))
+  geom_label_repel(aes(label=cancertype))
 
-ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/model_pred_obs_POT_spearman.pdf', panel_3, height=5, width = 10, units = 'in', dpi = 500)
+ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/model_pred_obs_POT_spearman.pdf', panel_3_A, height=5, width = 10, units = 'in', dpi = 500)
 
-
-################ lollipop plot for predicted POT
+```
+<!-- Panel_3: lollipop plot for predicted TMB Power-->
+```{r}
 panel_3_B= ggplot(predicted_values, aes(x = reorder(rownames(predicted_values), predicted_OS_Power_of_TMB), y = predicted_OS_Power_of_TMB)) +  
   geom_point(stat = "identity", color = "dark blue", size = 6) +
   geom_hline(yintercept = 1.4, color = "royal blue 1", size = 0.5, linetype= 'dotted')+
@@ -232,54 +191,7 @@ panel_3_B= ggplot(predicted_values, aes(x = reorder(rownames(predicted_values), 
   ylab("Predicted Power of TMB (Using OS)")
 
 ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/lollipop_plot_predicted_POT_values.pdf', panel_3_B, height=5, width = 6, units = 'in', dpi = 500)
-
 ```
-<!-- check propotion of  -->
-```{r}
-
-# cancer_types_pro=  mskcc_combined[mskcc_combined$Cancer_Type == "NSCLC",]
-# cancer_types_pro[cancer_types_pro$TMB > 10]
-
-TMB_level_by_cancer_type=table(mskcc_combined$Cancer_Type,(mskcc_combined$TMB >10))
-colnames(TMB_level_by_cancer_type) = c("less_than_10", "greater_than_10")
-ratio_T_F= data.frame(greater_than_10= TMB_level_by_cancer_type[,"greater_than_10"], 
-                      less_than_10= TMB_level_by_cancer_type[,"less_than_10"],
-                      ratio= TMB_level_by_cancer_type[,"greater_than_10"] / 
-                        (TMB_level_by_cancer_type[,"greater_than_10"]+TMB_level_by_cancer_type[,"less_than_10"])
-                      )
-proportion_TMB=ggplot(ratio_T_F, aes(x=reorder(rownames(ratio_T_F), ratio), y= ratio, fill= ratio))+
-  geom_bar(stat = "identity")+
-  theme_bw(base_size = 15)+
-  labs(x='Cancer types',
-       y='Proportion of TMB(>10)')+
-  coord_flip()
-
-ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Proportion_TMB_greater_10.pdf', proportion_TMB, height=5, width = 6, units = 'in', dpi = 500)
-
-
-```
-<!-- Tables-->
-```{r}
-# <!--2277 Sample list-->
-mskcc_combined_used= mskcc_combined[!(mskcc_combined$Cancer_Type %in% c('Gastric','Mesothelioma',"SCLC",'Unknown primary')),]
-
-sample_list=mskcc_combined_used$ID
-write.csv(mskcc_combined_used, file = "/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/mskcc_dataset__used_for_analysis.csv")
-
-
-na.omit(immune_factor[allcancer_types,])
-
-
-
-TCGA_immune_cell = data.frame(t(immune_cells_by_cancerType[!(rownames(immune_cells_by_cancerType) %in% all_cancer_types_trained),]))
-write.csv(TCGA_immune_cell, file = "/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/TCGA_Immune_cell_for_analysis.csv")
-### mean Immune abundance
-
-
-```
-
-
-
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
