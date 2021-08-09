@@ -100,6 +100,7 @@ levels(mskcc_combined$Cancer_Type_acronym)=c('BLCA', 'BRCA','COAD', 'UCEC', 'ESC
                                              'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
 samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length)
 cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
+table(mskcc_combined$Cancer_Type)
 ```
 
 

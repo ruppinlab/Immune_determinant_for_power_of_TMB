@@ -1741,39 +1741,22 @@ pre code {
 <p>Try executing this chunk by clicking the <em>Run</em> button within the chunk or by placing your cursor inside it and pressi_ng <em>Cmd+Shift+Enter</em>. <!-- Run s0 and s1 to load and preprocess the data and functions required--> <!-- Calculate Response difference btw tmb-high vs low group--></p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYWxsY2FuY2VyX3R5cGVzPWxldmVscyhtc2tjY19jb21iaW5lZCRDYW5jZXJfVHlwZV9hY3JvbnltKVxuXG5PUlJfZGlmZmVyZW5jZT1kby5jYWxsKHJiaW5kLCBzYXBwbHkoYWxsY2FuY2VyX3R5cGVzLCBmdW5jdGlvbih4KVxuICBlcnJfaGFuZGxlKENhbGN1bGF0ZV9UTUJfUmVzcG9uc2VfYXNzb2NpYXRpb24oaW5mdW5jX2RmPSBtc2tjY19jb21iaW5lZCxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIENPST14LFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfbWVhc3VyZT0nT1JSJykpICkpXG5cbk9TX2RpZmZlcmVuY2U9ZG8uY2FsbChyYmluZCwgbGFwcGx5KGFsbGNhbmNlcl90eXBlcywgZnVuY3Rpb24oeClcbiAgZXJyX2hhbmRsZShDYWxjdWxhdGVfVE1CX1Jlc3BvbnNlX2Fzc29jaWF0aW9uKGluZnVuY19kZj0gbXNrY2NfY29tYmluZWQsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBDT0k9eCxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc3BvbnNlX21lYXN1cmU9J09TJykpKSApXG4jIyAxL0hSIHRvIGtlZXAgc2FtZSBkaXJlY3Rpb24gZm9yIFRNQiBwb3dlclxuT1NfZGlmZmVyZW5jZSA8LSBkYXRhLmZyYW1lKE9TX2RpZmZlcmVuY2UpXG5PU19kaWZmZXJlbmNlJGVmZmVjdF9zaXplPSAxL09TX2RpZmZlcmVuY2UkZWZmZWN0X3NpemVcbnJvd25hbWVzKE9TX2RpZmZlcmVuY2UpPWFsbGNhbmNlcl90eXBlc1xuXG5QRlNfZGlmZmVyZW5jZT1kby5jYWxsKHJiaW5kLCBsYXBwbHkoYWxsY2FuY2VyX3R5cGVzLCBmdW5jdGlvbih4KVxuICBlcnJfaGFuZGxlKENhbGN1bGF0ZV9UTUJfUmVzcG9uc2VfYXNzb2NpYXRpb24oaW5mdW5jX2RmPSBtc2tjY19jb21iaW5lZCxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIENPST14LFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfbWVhc3VyZT0nUEZTJykpKSApXG5QRlNfZGlmZmVyZW5jZSA8LSBkYXRhLmZyYW1lKFBGU19kaWZmZXJlbmNlKVxuUEZTX2RpZmZlcmVuY2UkZWZmZWN0X3NpemU9IDEvUEZTX2RpZmZlcmVuY2UkZWZmZWN0X3NpemVcbnJvd25hbWVzKFBGU19kaWZmZXJlbmNlKT1hbGxjYW5jZXJfdHlwZXNcbmBgYCJ9 -->
-<pre class="r"><code>allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
-
-ORR_difference=do.call(rbind, sapply(allcancer_types, function(x)
-  err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
-                                                COI=x,
-                                                response_measure=&#39;ORR&#39;)) ))
-
-OS_difference=do.call(rbind, lapply(allcancer_types, function(x)
-  err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
-                                                COI=x,
-                                                response_measure=&#39;OS&#39;))) )
-## 1/HR to keep same direction for TMB power
-OS_difference &lt;- data.frame(OS_difference)
-OS_difference$effect_size= 1/OS_difference$effect_size
-rownames(OS_difference)=allcancer_types
-
-PFS_difference=do.call(rbind, lapply(allcancer_types, function(x)
-  err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
-                                                COI=x,
-                                                response_measure=&#39;PFS&#39;))) )
-PFS_difference &lt;- data.frame(PFS_difference)
-PFS_difference$effect_size= 1/PFS_difference$effect_size
-rownames(PFS_difference)=allcancer_types</code></pre>
-<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibnJvdyI6MTgsIm5jb2wiOjJ9LCJyZGYiOiJINHNJQUFBQUFBQUFBd3R5aVREbWl1QmlZR0JnWm1BQlltWldJSk9CTlRURVRkZUNnWUdGQ2NoaEJFcHdndWdLb0NKaElBTWt5QWZFUXZZL0orUnNXTjd5MUlIMWIwM1lIODQrQjBiQnlDTjd2bHgxWUE1M3liZmlXdXpBeXJ2bDdlWXlWZ2RtQ2NtWHUyT0U3YjkrTGtzU3ZWSnEvOXRibHRYejFSTUh0aTFXS3hlODNXRC8rK1ZSbTRQeTkrcC9nQ3huWDJUL2JWSDcxNC9sUWc1Y1V5NmNLbHpqYTM4cTlYWFROZ1oreDhTV2x6NVpwcEgyZisrOStKNHNjdGIrMTRrbVhZN1RreDNZWG0wek0zYWZCbmRYMTdtUGMrUTlGdGxmK1hnZ2R0L3hDdnV5OEowTHprbHVzRjh5ZDdtbWMrOVUrOW12UlovdG5GTm5mL2J6cWZZMXpQZnNIeW95eXRYUGUyTy9vdXY3Lys5cXYrd1AzMWhZbXpzOTNiN1hlNUVuaCtyWitnOVFkem44S2wxaGRmMkgvWG1SSXhJWFpuMndYeUV3a1ozQjc1YjkreXRmUXk3Yi9MTi82SFgvMXg2ZGwvWlh6NG0xaW5mbjI2KzhidFZmckJPRkZwQ3NlWW01cWNWQWhnQTRNQ0dDM0tscGFhbkpKZkhGbVZXcHNBQVBRTlBJV1pSZnJvZXNXUWdxd2VMazQrd0lad2NoMk03K2ppNHdkcWl6cXpPTTdScU1VQk1jQWxmRDdPN2tDeFAyOEF1R0svZng5SUN6ZzcyZDRXcDhYWVA5WVo0Q0t2ZUJLV0x5RDRNcENYQkV1TURiTXdoaGpDTVNHNkdUUHpRdk95Ky9QRTgzb0Nnek43R29FajNva25NU2kyRytod2x5cFNTV0pPcWxGUUVEQnNqN2g2YUZQYitnSkRNL0Q2aUpDWlI0V2RFME14YWhDUWlVNW9HQ09FVTNPYU0wTDF2WDBCQmtBMWdlZ25taHRCQVNtd2xpSjlOL3FGbXNVTFBZVXZQU00vTmc4Y21hazVpVW1nUGw4QUhqRWh5VmVnVkZtWGtsTUs4QVJZdjFTdkpMRW1IcXVKTHpjMkFpWU04eC9BTUF6eU1sOHJRREFBQT0ifQ== -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["effect_size"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["P"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"1.597760e+00","2":"0.0130900265","_rn_":"BLCA"},{"1":"2.748772e+00","2":"0.3272553363","_rn_":"BRCA"},{"1":"2.133472e+00","2":"0.0054547549","_rn_":"COAD"},{"1":"2.417611e+00","2":"0.0402652967","_rn_":"UCEC"},{"1":"2.631693e+00","2":"0.0272639677","_rn_":"ESCA"},{"1":"2.386768e+00","2":"0.2340024149","_rn_":"STAD"},{"1":"1.371939e+00","2":"0.5352788540","_rn_":"GBM"},{"1":"1.705838e+00","2":"0.0479352474","_rn_":"HNSC"},{"1":"2.838003e+00","2":"0.1550485480","_rn_":"LIHC"},{"1":"1.744573e+00","2":"0.0143044165","_rn_":"SKCM"},{"1":"NA","2":"NA","_rn_":"MESO"},{"1":"1.414680e+00","2":"0.0005181384","_rn_":"NSCLC"},{"1":"3.322664e+00","2":"0.2428212281","_rn_":"OV"},{"1":"2.062354e-01","2":"0.0470013925","_rn_":"PAAD"},{"1":"9.185098e+06","2":"0.9947458894","_rn_":"KIRC"},{"1":"1.866921e+00","2":"0.5403900048","_rn_":"SARC"},{"1":"1.673952e+00","2":"0.3407036113","_rn_":"SCLC"},{"1":"2.864605e+00","2":"0.0504701901","_rn_":"Unknown-Primary"}],"options":{"columns":{"min":{},"max":[10],"total":[2]},"rows":{"min":[10],"max":[10],"total":[18]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- Figure 2B and extended_figure 2C-->
 <!-- Immune determinants of tmb-response association Part 1: ORR-->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuRmlnX09SUl9hbGxjYW5jZXJfdHlwZXM9Y3JlYXRlX2NvcnJfd2l0aF9JbW11bmVfZmFjdG9ycyhpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBPUlJfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nT1JSJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZSA9ICdBbGwgQ2FuY2VyIFR5cGVzJylcblxuRmlnX09SUl9Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzPWNyZWF0ZV9jb3JyX3dpdGhfSW1tdW5lX2ZhY3RvcnMoXG4gIGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzW3doaWNoKE9SUl9kaWZmZXJlbmNlWywyXS8yPDAuMSldLFxuICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9SUl9kaWZmZXJlbmNlLFxuICByZXNwb25zZV90eXBlPSdPUlInLFxuICBjb25zaWRlcl9jYW5jZXJfdHlwZT0nT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlcycsXG4gIGluZnVuY190aXRsZSA9ICdDYW5jZXIgdHlwZXMgd2l0aCBTaWcgUG93ZXIgb2YgVE1CJylcblxuY29tYmluZWRfT1JSPWdnYXJyYW5nZShGaWdfT1JSX2FsbGNhbmNlcl90eXBlc1tbMl1dLCBcbiAgICAgICAgICAgICAgICAgICAgICAgRmlnX09SUl9Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1syXV0sIFxuICAgICAgICAgICAgICAgICAgICAgICBjb21tb24ubGVnZW5kID0gVClcbmdnc2F2ZShwYXN0ZSgnL1VzZXJzL25lZWxhbWYyL0RvY3VtZW50cy9HaXRIdWIvSW1tdW5lX2RldGVybWluYW50X2Zvcl9wb3dlcl9vZl9UTUIvUmVzdWx0X2ZndXJlcy9GaWcxQV90bWItT1JSX2Fzc29jaWF0aW9uVlNUTUVfZmFjdG9ycycsXG4gICAgICAgICAgICAgJy5wZGYnLCBzZXAgPScnICksXG4gICAgICAgY29tYmluZWRfT1JSLCBoZWlnaHQ9Nywgd2lkdGggPSAxMiwgdW5pdHMgPSAnaW4nLCBkcGkgPSA1MDApXG5cbmBgYCJ9 -->
-<pre class="r"><code>Fig_ORR_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuRmlnX09SUl9hbGxjYW5jZXJfdHlwZXM9Y3JlYXRlX2NvcnJfd2l0aF9JbW11bmVfZmFjdG9ycyhpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBPUlJfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nT1JSJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZSA9ICdBbGwgQ2FuY2VyIFR5cGVzJylcblxuRmlnX09SUl9Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzPWNyZWF0ZV9jb3JyX3dpdGhfSW1tdW5lX2ZhY3RvcnMoXG4gIGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzW3doaWNoKE9SUl9kaWZmZXJlbmNlWywyXS8yPDAuMSldLFxuICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9SUl9kaWZmZXJlbmNlLFxuICByZXNwb25zZV90eXBlPSdPUlInLFxuICBjb25zaWRlcl9jYW5jZXJfdHlwZT0nT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlcycsXG4gIGluZnVuY190aXRsZSA9ICdDYW5jZXIgdHlwZXMgd2l0aCBTaWcgUG93ZXIgb2YgVE1CJylcblxuY29tYmluZWRfT1JSPWdnYXJyYW5nZShGaWdfT1JSX2FsbGNhbmNlcl90eXBlc1tbMl1dLCBcbiAgICAgICAgICAgICAgICAgICAgICAgRmlnX09SUl9Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1syXV0sIFxuICAgICAgICAgICAgICAgICAgICAgICBjb21tb24ubGVnZW5kID0gVClcbmdnc2F2ZShwYXN0ZSgnL1VzZXJzL25lZWxhbWYyL0RvY3VtZW50cy9HaXRIdWIvSW1tdW5lX2RldGVybWluYW50X2Zvcl9wb3dlcl9vZl9UTUIvUmVzdWx0X2ZndXJlcy9GaWcxQV90bWItT1JSX2Fzc29jaWF0aW9uVlNUTUVfZmFjdG9ycycsXG4gICAgICAgICAgICAgJy5wZGYnLCBzZXAgPScnICksXG4gICAgICAgY29tYmluZWRfT1JSLCBoZWlnaHQ9Nywgd2lkdGggPSAxMiwgdW5pdHMgPSAnaW4nLCBkcGkgPSA1MDApXG5cbmBgYFxuYGBgIn0= -->
+<pre class="r"><code>```r
+Fig_ORR_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
                                                         infunc_immune_matrix=immune_factor,
                                                         infun_Tmb_Resp_Association = ORR_difference,
                                                         response_type=&#39;ORR&#39;,
@@ -1795,15 +1778,28 @@ ggsave(paste(&#39;/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_
              &#39;.pdf&#39;, sep =&#39;&#39; ),
        combined_ORR, height=7, width = 12, units = &#39;in&#39;, dpi = 500)
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- Figure 2A and extended_figure 2B-->
-<!-- Immune determinants of tmb-response association Part 2: OS-->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuRmlnX09TX2FsbGNhbmNlcl90eXBlcz1jcmVhdGVfY29ycl93aXRoX0ltbXVuZV9mYWN0b3JzKGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9TX2RpZmZlcmVuY2UsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc3BvbnNlX3R5cGU9J09TJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZSA9ICdBbGwgQ2FuY2VyIFR5cGVzJylcblxuRmlnX09TX09ubHlfU2lnX1RtYi5SZXNwX2Fzc29jaWF0ZWRfY2FuY2VyVHlwZXM9Y3JlYXRlX2NvcnJfd2l0aF9JbW11bmVfZmFjdG9ycyhcbiAgaW5mdW5jX2NhbmNlcl90eXBlcz1hbGxjYW5jZXJfdHlwZXNbd2hpY2goT1NfZGlmZmVyZW5jZVssMl0vMjwwLjEpXSxcbiAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBPU19kaWZmZXJlbmNlLFxuICByZXNwb25zZV90eXBlPSdPUycsXG4gIGNvbnNpZGVyX2NhbmNlcl90eXBlPSdPbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzJyxcbiAgaW5mdW5jX3RpdGxlID0gJ0NhbmNlciB0eXBlcyB3aXRoIFNpZyB0bWItcmVzcCBBc3NvY2lhdGlvbicpXG5cbmNvbWJpbmVkX09TPWdnYXJyYW5nZShGaWdfT1NfYWxsY2FuY2VyX3R5cGVzW1syXV0sIFxuICAgICAgICAgICAgICAgICAgICAgICBGaWdfT1NfT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlc1tbMl1dLCBcbiAgICAgICAgICAgICAgICAgICAgICAgY29tbW9uLmxlZ2VuZCA9IFQpXG5nZ3NhdmUocGFzdGUoJy9Vc2Vycy9uZWVsYW1mMi9Eb2N1bWVudHMvR2l0SHViL0ltbXVuZV9kZXRlcm1pbmFudF9mb3JfcG93ZXJfb2ZfVE1CL1Jlc3VsdF9mZ3VyZXMvRmlnMUJfdG1iLU9TX2Fzc29jaWF0aW9uVlNUTUVfZmFjdG9ycycsXG4gICAgICAgICAgICAgJy5wZGYnLCBzZXAgPScnICksXG4gICAgICAgY29tYmluZWRfT1MsIGhlaWdodD03LCB3aWR0aCA9IDEyLCB1bml0cyA9ICdpbicsIGRwaSA9IDUwMClcblxuXG5gYGAifQ== -->
-<pre class="r"><code>Fig_OS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+&lt;!-- Figure 2A and extended_figure 2B--&gt;
+&lt;!-- Immune determinants of tmb-response association Part 2: OS--&gt;
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuRmlnX09TX2FsbGNhbmNlcl90eXBlcz1jcmVhdGVfY29ycl93aXRoX0ltbXVuZV9mYWN0b3JzKGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9TX2RpZmZlcmVuY2UsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc3BvbnNlX3R5cGU9J09TJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZSA9ICdBbGwgQ2FuY2VyIFR5cGVzJylcblxuRmlnX09TX09ubHlfU2lnX1RtYi5SZXNwX2Fzc29jaWF0ZWRfY2FuY2VyVHlwZXM9Y3JlYXRlX2NvcnJfd2l0aF9JbW11bmVfZmFjdG9ycyhcbiAgaW5mdW5jX2NhbmNlcl90eXBlcz1hbGxjYW5jZXJfdHlwZXNbd2hpY2goT1NfZGlmZmVyZW5jZVssMl0vMjwwLjEpXSxcbiAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBPU19kaWZmZXJlbmNlLFxuICByZXNwb25zZV90eXBlPSdPUycsXG4gIGNvbnNpZGVyX2NhbmNlcl90eXBlPSdPbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzJyxcbiAgaW5mdW5jX3RpdGxlID0gJ0NhbmNlciB0eXBlcyB3aXRoIFNpZyB0bWItcmVzcCBBc3NvY2lhdGlvbicpXG5cbmNvbWJpbmVkX09TPWdnYXJyYW5nZShGaWdfT1NfYWxsY2FuY2VyX3R5cGVzW1syXV0sIFxuICAgICAgICAgICAgICAgICAgICAgICBGaWdfT1NfT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlc1tbMl1dLCBcbiAgICAgICAgICAgICAgICAgICAgICAgY29tbW9uLmxlZ2VuZCA9IFQpXG5nZ3NhdmUocGFzdGUoJy9Vc2Vycy9uZWVsYW1mMi9Eb2N1bWVudHMvR2l0SHViL0ltbXVuZV9kZXRlcm1pbmFudF9mb3JfcG93ZXJfb2ZfVE1CL1Jlc3VsdF9mZ3VyZXMvRmlnMUJfdG1iLU9TX2Fzc29jaWF0aW9uVlNUTUVfZmFjdG9ycycsXG4gICAgICAgICAgICAgJy5wZGYnLCBzZXAgPScnICksXG4gICAgICAgY29tYmluZWRfT1MsIGhlaWdodD03LCB3aWR0aCA9IDEyLCB1bml0cyA9ICdpbicsIGRwaSA9IDUwMClcblxuXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+Fig_OS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
                                 infunc_immune_matrix=immune_factor,
                                 infun_Tmb_Resp_Association = OS_difference,
                                 response_type=&#39;OS&#39;,
@@ -1825,15 +1821,28 @@ ggsave(paste(&#39;/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_
              &#39;.pdf&#39;, sep =&#39;&#39; ),
        combined_OS, height=7, width = 12, units = &#39;in&#39;, dpi = 500)
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- extended_figure 2A-->
-<!-- Immune determinants of tmb-response association Part 3: PFS-->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuRmlnX1BGU19hbGxjYW5jZXJfdHlwZXM9Y3JlYXRlX2NvcnJfd2l0aF9JbW11bmVfZmFjdG9ycyhpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBQRlNfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nUEZTJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZSA9ICdBbGwgQ2FuY2VyIFR5cGVzJylcblxuRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzPWNyZWF0ZV9jb3JyX3dpdGhfSW1tdW5lX2ZhY3RvcnMoXG4gIGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzW3doaWNoKFBGU19kaWZmZXJlbmNlWywyXS8yPDAuMSldLFxuICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IFBGU19kaWZmZXJlbmNlLFxuICByZXNwb25zZV90eXBlPSdQRlMnLFxuICBjb25zaWRlcl9jYW5jZXJfdHlwZT0nT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlcycsXG4gIGluZnVuY190aXRsZSA9ICdDYW5jZXIgdHlwZXMgd2l0aCBTaWcgdG1iLXJlc3AgQXNzb2NpYXRpb24nKVxuY29tYmluZWRfUEZTPWdnYXJyYW5nZShGaWdfUEZTX2FsbGNhbmNlcl90eXBlc1tbMl1dLCBcbiAgICAgICAgICAgICAgICAgICAgICAgRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1syXV0sIFxuICAgICAgICAgICAgICAgICAgICAgICBjb21tb24ubGVnZW5kID0gVClcblxuZ2dzYXZlKHBhc3RlKCcvVXNlcnMvbmVlbGFtZjIvRG9jdW1lbnRzL0dpdEh1Yi9JbW11bmVfZGV0ZXJtaW5hbnRfZm9yX3Bvd2VyX29mX1RNQi9SZXN1bHRfZmd1cmVzLy9GaWcxQ190bWItUEZTX2Fzc29jaWF0aW9uVlNUTUVfZmFjdG9ycycsXG4gICAgICAgICAgICAgJy5wZGYnLCBzZXAgPScnICksXG4gICAgICAgY29tYmluZWRfUEZTLCBoZWlnaHQ9Nywgd2lkdGggPSAxMiwgdW5pdHMgPSAnaW4nLCBkcGkgPSA1MDApXG5gYGAifQ== -->
-<pre class="r"><code>Fig_PFS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+&lt;!-- extended_figure 2A--&gt;
+&lt;!-- Immune determinants of tmb-response association Part 3: PFS--&gt;
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuRmlnX1BGU19hbGxjYW5jZXJfdHlwZXM9Y3JlYXRlX2NvcnJfd2l0aF9JbW11bmVfZmFjdG9ycyhpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBQRlNfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nUEZTJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZSA9ICdBbGwgQ2FuY2VyIFR5cGVzJylcblxuRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzPWNyZWF0ZV9jb3JyX3dpdGhfSW1tdW5lX2ZhY3RvcnMoXG4gIGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzW3doaWNoKFBGU19kaWZmZXJlbmNlWywyXS8yPDAuMSldLFxuICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IFBGU19kaWZmZXJlbmNlLFxuICByZXNwb25zZV90eXBlPSdQRlMnLFxuICBjb25zaWRlcl9jYW5jZXJfdHlwZT0nT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlcycsXG4gIGluZnVuY190aXRsZSA9ICdDYW5jZXIgdHlwZXMgd2l0aCBTaWcgdG1iLXJlc3AgQXNzb2NpYXRpb24nKVxuY29tYmluZWRfUEZTPWdnYXJyYW5nZShGaWdfUEZTX2FsbGNhbmNlcl90eXBlc1tbMl1dLCBcbiAgICAgICAgICAgICAgICAgICAgICAgRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1syXV0sIFxuICAgICAgICAgICAgICAgICAgICAgICBjb21tb24ubGVnZW5kID0gVClcblxuZ2dzYXZlKHBhc3RlKCcvVXNlcnMvbmVlbGFtZjIvRG9jdW1lbnRzL0dpdEh1Yi9JbW11bmVfZGV0ZXJtaW5hbnRfZm9yX3Bvd2VyX29mX1RNQi9SZXN1bHRfZmd1cmVzLy9GaWcxQ190bWItUEZTX2Fzc29jaWF0aW9uVlNUTUVfZmFjdG9ycycsXG4gICAgICAgICAgICAgJy5wZGYnLCBzZXAgPScnICksXG4gICAgICAgY29tYmluZWRfUEZTLCBoZWlnaHQ9Nywgd2lkdGggPSAxMiwgdW5pdHMgPSAnaW4nLCBkcGkgPSA1MDApXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+Fig_PFS_allcancer_types=create_corr_with_Immune_factors(infunc_cancer_types=allcancer_types,
                                 infunc_immune_matrix=immune_factor,
                                 infun_Tmb_Resp_Association = PFS_difference,
                                 response_type=&#39;PFS&#39;,
@@ -1854,14 +1863,27 @@ combined_PFS=ggarrange(Fig_PFS_allcancer_types[[2]],
 ggsave(paste(&#39;/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures//Fig1C_tmb-PFS_associationVSTME_factors&#39;,
              &#39;.pdf&#39;, sep =&#39;&#39; ),
        combined_PFS, height=7, width = 12, units = &#39;in&#39;, dpi = 500)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- Scatter plot for 5 modulators: using OS-->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTW9kdWxhdG9yXzE9IGNyZWF0ZV9zY2F0dGVyX3Bsb3QoaW5mdW5jX2NhbmNlcl90eXBlcz1hbGxjYW5jZXJfdHlwZXMsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9TX2RpZmZlcmVuY2UsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nT1MnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnNpZGVyX2NhbmNlcl90eXBlPSdhbGxfY2FuY2VyVHlwZXMnLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfdGl0bGU9J0FsbCBjYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW1tdW5lX2ZlYXR1cmVfb2ZfaW50ZXJlc3Q9IGNvbG5hbWVzKGluZnVuY19pbW11bmVfbWF0cml4KVsyMl0pXG5Nb2R1bGF0b3JfMj0gY3JlYXRlX3NjYXR0ZXJfcGxvdChpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuX1RtYl9SZXNwX0Fzc29jaWF0aW9uID0gT1NfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXNwb25zZV90eXBlPSdPUycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZT0nQWxsIGNhbmNlclR5cGVzJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbW11bmVfZmVhdHVyZV9vZl9pbnRlcmVzdD0gY29sbmFtZXMoaW5mdW5jX2ltbXVuZV9tYXRyaXgpWzM5XSlcbk1vZHVsYXRvcl8zPSBjcmVhdGVfc2NhdHRlcl9wbG90KGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY19pbW11bmVfbWF0cml4PWltbXVuZV9mYWN0b3IsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBPU19kaWZmZXJlbmNlLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc3BvbnNlX3R5cGU9J09TJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb25zaWRlcl9jYW5jZXJfdHlwZT0nYWxsX2NhbmNlclR5cGVzJywgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX3RpdGxlPSdBbGwgY2FuY2VyVHlwZXMnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGltbXVuZV9mZWF0dXJlX29mX2ludGVyZXN0PSBjb2xuYW1lcyhpbmZ1bmNfaW1tdW5lX21hdHJpeClbMjRdKVxuTW9kdWxhdG9yXzQ9IGNyZWF0ZV9zY2F0dGVyX3Bsb3QoaW5mdW5jX2NhbmNlcl90eXBlcz1hbGxjYW5jZXJfdHlwZXMsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9TX2RpZmZlcmVuY2UsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nT1MnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnNpZGVyX2NhbmNlcl90eXBlPSdhbGxfY2FuY2VyVHlwZXMnLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfdGl0bGU9J0FsbCBjYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW1tdW5lX2ZlYXR1cmVfb2ZfaW50ZXJlc3Q9IGNvbG5hbWVzKGluZnVuY19pbW11bmVfbWF0cml4KVsyNV0pXG5Nb2R1bGF0b3JfNT0gY3JlYXRlX3NjYXR0ZXJfcGxvdChpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuX1RtYl9SZXNwX0Fzc29jaWF0aW9uID0gT1NfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXNwb25zZV90eXBlPSdPUycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZT0nQWxsIGNhbmNlclR5cGVzJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbW11bmVfZmVhdHVyZV9vZl9pbnRlcmVzdD0gY29sbmFtZXMoaW5mdW5jX2ltbXVuZV9tYXRyaXgpWzM3XSlcblxuXG5jb21iaW5lZF9maWcgPSBnZ2FycmFuZ2UoTW9kdWxhdG9yXzFbWzJdXSxcbiAgICAgICAgICAgICAgICAgICAgICAgICBNb2R1bGF0b3JfMltbMl1dLFxuICAgICAgICAgICAgICAgICAgICAgICAgIE1vZHVsYXRvcl8zW1syXV0sXG4gICAgICAgICAgICAgICAgICAgICAgICAgTW9kdWxhdG9yXzRbWzJdXSxcbiAgICAgICAgICAgICAgICAgICAgICAgICBNb2R1bGF0b3JfNVtbMl1dLGxhYmVscyA9IGMoXCJDXCIsXCJEXCIsXCJFXCIsXCJGXCIsXCJHXCIpLFxuICAgICAgICAgICAgICAgICAgICAgICAgIGxlZ2VuZCA9XCJ0b3BcIiwgY29tbW9uLmxlZ2VuZCA9IFQsIG5jb2wgPSA1KVxuY29tYmluZWRfZmlnXG4gZ2dzYXZlKCcvVXNlcnMvbmVlbGFtZjIvRG9jdW1lbnRzL0dpdEh1Yi9JbW11bmVfZGV0ZXJtaW5hbnRfZm9yX3Bvd2VyX29mX1RNQi9SZXN1bHRfZmd1cmVzL3NjYXR0ZXJfcGxvdF81X21vZHVsYXRvcnMudGlmZicsXG4gICAgICAgICBjb21iaW5lZF9maWcsIGhlaWdodD01LCB3aWR0aCA9IDIwLCBkcGkgPSA1MDApXG5gYGAifQ== -->
-<pre class="r"><code>Modulator_1= create_scatter_plot(infunc_cancer_types=allcancer_types,
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+&lt;!-- Scatter plot for 5 modulators: using OS--&gt;
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuTW9kdWxhdG9yXzE9IGNyZWF0ZV9zY2F0dGVyX3Bsb3QoaW5mdW5jX2NhbmNlcl90eXBlcz1hbGxjYW5jZXJfdHlwZXMsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9TX2RpZmZlcmVuY2UsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nT1MnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnNpZGVyX2NhbmNlcl90eXBlPSdhbGxfY2FuY2VyVHlwZXMnLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfdGl0bGU9J0FsbCBjYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW1tdW5lX2ZlYXR1cmVfb2ZfaW50ZXJlc3Q9IGNvbG5hbWVzKGluZnVuY19pbW11bmVfbWF0cml4KVsyMl0pXG5Nb2R1bGF0b3JfMj0gY3JlYXRlX3NjYXR0ZXJfcGxvdChpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuX1RtYl9SZXNwX0Fzc29jaWF0aW9uID0gT1NfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXNwb25zZV90eXBlPSdPUycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZT0nQWxsIGNhbmNlclR5cGVzJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbW11bmVfZmVhdHVyZV9vZl9pbnRlcmVzdD0gY29sbmFtZXMoaW5mdW5jX2ltbXVuZV9tYXRyaXgpWzM5XSlcbk1vZHVsYXRvcl8zPSBjcmVhdGVfc2NhdHRlcl9wbG90KGluZnVuY19jYW5jZXJfdHlwZXM9YWxsY2FuY2VyX3R5cGVzLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY19pbW11bmVfbWF0cml4PWltbXVuZV9mYWN0b3IsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5fVG1iX1Jlc3BfQXNzb2NpYXRpb24gPSBPU19kaWZmZXJlbmNlLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlc3BvbnNlX3R5cGU9J09TJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb25zaWRlcl9jYW5jZXJfdHlwZT0nYWxsX2NhbmNlclR5cGVzJywgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX3RpdGxlPSdBbGwgY2FuY2VyVHlwZXMnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGltbXVuZV9mZWF0dXJlX29mX2ludGVyZXN0PSBjb2xuYW1lcyhpbmZ1bmNfaW1tdW5lX21hdHJpeClbMjRdKVxuTW9kdWxhdG9yXzQ9IGNyZWF0ZV9zY2F0dGVyX3Bsb3QoaW5mdW5jX2NhbmNlcl90eXBlcz1hbGxjYW5jZXJfdHlwZXMsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5mdW5jX2ltbXVuZV9tYXRyaXg9aW1tdW5lX2ZhY3RvcixcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bl9UbWJfUmVzcF9Bc3NvY2lhdGlvbiA9IE9TX2RpZmZlcmVuY2UsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVzcG9uc2VfdHlwZT0nT1MnLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnNpZGVyX2NhbmNlcl90eXBlPSdhbGxfY2FuY2VyVHlwZXMnLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfdGl0bGU9J0FsbCBjYW5jZXJUeXBlcycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW1tdW5lX2ZlYXR1cmVfb2ZfaW50ZXJlc3Q9IGNvbG5hbWVzKGluZnVuY19pbW11bmVfbWF0cml4KVsyNV0pXG5Nb2R1bGF0b3JfNT0gY3JlYXRlX3NjYXR0ZXJfcGxvdChpbmZ1bmNfY2FuY2VyX3R5cGVzPWFsbGNhbmNlcl90eXBlcyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbmZ1bmNfaW1tdW5lX21hdHJpeD1pbW11bmVfZmFjdG9yLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuX1RtYl9SZXNwX0Fzc29jaWF0aW9uID0gT1NfZGlmZmVyZW5jZSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXNwb25zZV90eXBlPSdPUycsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc2lkZXJfY2FuY2VyX3R5cGU9J2FsbF9jYW5jZXJUeXBlcycsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGluZnVuY190aXRsZT0nQWxsIGNhbmNlclR5cGVzJyxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbW11bmVfZmVhdHVyZV9vZl9pbnRlcmVzdD0gY29sbmFtZXMoaW5mdW5jX2ltbXVuZV9tYXRyaXgpWzM3XSlcblxuXG5jb21iaW5lZF9maWcgPSBnZ2FycmFuZ2UoTW9kdWxhdG9yXzFbWzJdXSxcbiAgICAgICAgICAgICAgICAgICAgICAgICBNb2R1bGF0b3JfMltbMl1dLFxuICAgICAgICAgICAgICAgICAgICAgICAgIE1vZHVsYXRvcl8zW1syXV0sXG4gICAgICAgICAgICAgICAgICAgICAgICAgTW9kdWxhdG9yXzRbWzJdXSxcbiAgICAgICAgICAgICAgICAgICAgICAgICBNb2R1bGF0b3JfNVtbMl1dLGxhYmVscyA9IGMoXFxDXFwsXFxEXFwsXFxFXFwsXFxGXFwsXFxHXFwpLFxuICAgICAgICAgICAgICAgICAgICAgICAgIGxlZ2VuZCA9XFx0b3BcXCwgY29tbW9uLmxlZ2VuZCA9IFQsIG5jb2wgPSA1KVxuY29tYmluZWRfZmlnXG4gZ2dzYXZlKCcvVXNlcnMvbmVlbGFtZjIvRG9jdW1lbnRzL0dpdEh1Yi9JbW11bmVfZGV0ZXJtaW5hbnRfZm9yX3Bvd2VyX29mX1RNQi9SZXN1bHRfZmd1cmVzL3NjYXR0ZXJfcGxvdF81X21vZHVsYXRvcnMudGlmZicsXG4gICAgICAgICBjb21iaW5lZF9maWcsIGhlaWdodD01LCB3aWR0aCA9IDIwLCBkcGkgPSA1MDApXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+Modulator_1= create_scatter_plot(infunc_cancer_types=allcancer_types,
                                infunc_immune_matrix=immune_factor,
                                infun_Tmb_Resp_Association = OS_difference,
                                response_type=&#39;OS&#39;,
@@ -1902,19 +1924,32 @@ combined_fig = ggarrange(Modulator_1[[2]],
                          Modulator_2[[2]],
                          Modulator_3[[2]],
                          Modulator_4[[2]],
-                         Modulator_5[[2]],labels = c(&quot;C&quot;,&quot;D&quot;,&quot;E&quot;,&quot;F&quot;,&quot;G&quot;),
-                         legend =&quot;top&quot;, common.legend = T, ncol = 5)
+                         Modulator_5[[2]],labels = c(\C\,\D\,\E\,\F\,\G\),
+                         legend =\top\, common.legend = T, ncol = 5)
 combined_fig
  ggsave(&#39;/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/scatter_plot_5_modulators.tiff&#39;,
          combined_fig, height=5, width = 20, dpi = 500)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- Figure 2D (panel2)-->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGYycGxvdD1kYXRhLmZyYW1lKGFsbGNhbmNlcl90eXBlcyxPU19kaWZmZXJlbmNlW2FsbGNhbmNlcl90eXBlcyxdLFxuICAgICAgICAgICAgICAgICAgICAgaW1tdW5lX2ZhY3RvclthbGxjYW5jZXJfdHlwZXMsYygyMiwzOSwyNCwzNyldKVxuZGYycGxvdD0gbmEub21pdChkZjJwbG90KVxuZGYycGxvdD0gZGYycGxvdFtpcy5maW5pdGUoZGYycGxvdCRlZmZlY3Rfc2l6ZSksXVxuZGYycGxvdCRyYW5rPSByYW5rKGRmMnBsb3QkZWZmZWN0X3NpemUpXG5kZjJwbG90X2xvbmc9IGdhdGhlcihkZjJwbG90LCBtb2R1bGF0b3JfbmFtZSwgYWJ1bmRhbmNlLFxuICAgICAgICAgICAgICAgICAgICAgIE0xLm1hY3JvcGhhZ2UuOlBETDEuLmNvbWJpbmVkLnBvc2l0aXZlLnNjb3JlLixmYWN0b3Jfa2V5ID0gVCApXG5cbmRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZT0gaWZlbHNlKGRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZSA9PSBcIk0xLm1hY3JvcGhhZ2UuXCIsIFwiTTEgbWFjcm9waGFnZVwiLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmZWxzZShkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUgPT0gXCJUdW1vci5wdXJpdHkuXCIsIFwiVHVtb3IgcHVyaXR5XCIsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaWZlbHNlKGRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZSA9PSBcIlJlc3RpbmcuZGVuZHJpdGljLmNlbGxzLlwiXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICxcIlJlc3RpbmcgZGVuZHJpdGljIGNlbGxzXCIsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmZWxzZShkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUgPT0gXCJBY3RpdmUuZGVuZHJpdGljLmNlbGxzLlwiLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIkFjdGl2ZSBkZW5kcml0aWMgY2VsbHNcIiwgXCJQREwxIGNvbWJpbmVkIHBvc2l0aXZlIHNjb3JlXCIpKSkpXG5cbmRmMnBsb3RfbG9uZyRNb2R1bGF0b3JfdHlwZSA9IGlmZWxzZShkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUgJWluJSBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjKFwiTTEgbWFjcm9waGFnZVwiLFwiVHVtb3IgcHVyaXR5XCIpLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIlBvc2l0aXZlIG1vZHVsYXRvclwiLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcIk5lZ2F0aXZlIG1vZHVsYXRvclwiKVxuXG5cbiMgdW5saXN0KGxhcHBseShzcGxpdChkZjJwbG90X2xvbmcsIGRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZSksIGZ1bmN0aW9uKHgpIHJhbmsoeFssNl0pKSlcblxuZGYycGxvdF9sb25nPSBkZjJwbG90X2xvbmdbb3JkZXIoZGYycGxvdF9sb25nJG1vZHVsYXRvcl9uYW1lKSxdXG5kZjJwbG90X2xvbmckbW9kdWxhdG9yX3Jhbms9IHVubGlzdChsYXBwbHkoc3BsaXQoZGYycGxvdF9sb25nLCBkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUpLCBmdW5jdGlvbih4KSByYW5rKHhbLDZdKSkpXG5cbmRmMnBsb3RfcGVhcnNvbj0gZGYycGxvdF9sb25nWyEoZGYycGxvdF9sb25nJGFsbGNhbmNlcl90eXBlcyAlaW4lIGMoJ0tJUkMnKSksXVxuXG5QYW5lbDJfRCA8LSBnZ3Bsb3QoZGYycGxvdF9wZWFyc29uLCBhZXMoeD1lZmZlY3Rfc2l6ZSwgeT0gYWJ1bmRhbmNlLCBzaXplPSAtbG9nKFAsIDEwKSkpICsgXG4gIHN0YXRfc21vb3RoKG1ldGhvZD0nbG0nKStcbiAgZmFjZXRfd3JhcCh+IE1vZHVsYXRvcl90eXBlK21vZHVsYXRvcl9uYW1lLCBzY2FsZXMgPSAnZnJlZScpK1xuICBnZW9tX3BvaW50KCkrXG4gIHRoZW1lX2J3KGJhc2Vfc2l6ZSA9IDE1KStcbiAgICAjIHRoZW1lKGxlZ2VuZC5wb3NpdGlvbiA9ICdub25lJykrXG4gIGxhYnMoeD0nUG93ZXIgb2YgVE1CIChyYW5rKScsXG4gICAgICAgICB5PXBhc3RlKCdBYnVuZGFuY2UnKSwgc2l6ZT0nLWxvZzEwKFApJykrXG4gICMgc3RhdF9jb3IoIG1ldGhvZCA9ICdzJywgY29yLmNvZWYubmFtZSA9ICdyaG8nLCBzaXplPTUpK1xuICBnZW9tX2xhYmVsX3JlcGVsKGFlcyhsYWJlbD0oZGYycGxvdF9wZWFyc29uJGFsbGNhbmNlcl90eXBlcyksIHNpemU9MC45KSkrXG4gIGNvb3JkX2ZsaXAoKVxuICBnZ3NhdmUoJy9Vc2Vycy9uZWVsYW1mMi9Eb2N1bWVudHMvR2l0SHViL0ltbXVuZV9kZXRlcm1pbmFudF9mb3JfcG93ZXJfb2ZfVE1CL1Jlc3VsdF9mZ3VyZXMvT1NfUG93ZXJfb2ZfVE1CX2luXzVfYWJ1X21vZHVsYXRvcnNfc3BlYXIucGRmJyxcbiAgICAgICAgIFBhbmVsMl9ELCBoZWlnaHQ9MTAsIHdpZHRoID0gOSwgdW5pdHMgPSAnaW4nLCBkcGkgPSA1MDApXG5cbmBgYCJ9 -->
-<pre class="r"><code>df2plot=data.frame(allcancer_types,OS_difference[allcancer_types,],
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+&lt;!-- Figure 2D (panel2)--&gt;
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuZGYycGxvdD1kYXRhLmZyYW1lKGFsbGNhbmNlcl90eXBlcyxPU19kaWZmZXJlbmNlW2FsbGNhbmNlcl90eXBlcyxdLFxuICAgICAgICAgICAgICAgICAgICAgaW1tdW5lX2ZhY3RvclthbGxjYW5jZXJfdHlwZXMsYygyMiwzOSwyNCwzNyldKVxuZGYycGxvdD0gbmEub21pdChkZjJwbG90KVxuZGYycGxvdD0gZGYycGxvdFtpcy5maW5pdGUoZGYycGxvdCRlZmZlY3Rfc2l6ZSksXVxuZGYycGxvdCRyYW5rPSByYW5rKGRmMnBsb3QkZWZmZWN0X3NpemUpXG5kZjJwbG90X2xvbmc9IGdhdGhlcihkZjJwbG90LCBtb2R1bGF0b3JfbmFtZSwgYWJ1bmRhbmNlLFxuICAgICAgICAgICAgICAgICAgICAgIE0xLm1hY3JvcGhhZ2UuOlBETDEuLmNvbWJpbmVkLnBvc2l0aXZlLnNjb3JlLixmYWN0b3Jfa2V5ID0gVCApXG5cbmRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZT0gaWZlbHNlKGRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZSA9PSBcXE0xLm1hY3JvcGhhZ2UuXFwsIFxcTTEgbWFjcm9waGFnZVxcLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmZWxzZShkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUgPT0gXFxUdW1vci5wdXJpdHkuXFwsIFxcVHVtb3IgcHVyaXR5XFwsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaWZlbHNlKGRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZSA9PSBcXFJlc3RpbmcuZGVuZHJpdGljLmNlbGxzLlxcXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICxcXFJlc3RpbmcgZGVuZHJpdGljIGNlbGxzXFwsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGlmZWxzZShkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUgPT0gXFxBY3RpdmUuZGVuZHJpdGljLmNlbGxzLlxcLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcXEFjdGl2ZSBkZW5kcml0aWMgY2VsbHNcXCwgXFxQREwxIGNvbWJpbmVkIHBvc2l0aXZlIHNjb3JlXFwpKSkpXG5cbmRmMnBsb3RfbG9uZyRNb2R1bGF0b3JfdHlwZSA9IGlmZWxzZShkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUgJWluJSBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjKFxcTTEgbWFjcm9waGFnZVxcLFxcVHVtb3IgcHVyaXR5XFwpLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcXFBvc2l0aXZlIG1vZHVsYXRvclxcLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcXE5lZ2F0aXZlIG1vZHVsYXRvclxcKVxuXG5cbiMgdW5saXN0KGxhcHBseShzcGxpdChkZjJwbG90X2xvbmcsIGRmMnBsb3RfbG9uZyRtb2R1bGF0b3JfbmFtZSksIGZ1bmN0aW9uKHgpIHJhbmsoeFssNl0pKSlcblxuZGYycGxvdF9sb25nPSBkZjJwbG90X2xvbmdbb3JkZXIoZGYycGxvdF9sb25nJG1vZHVsYXRvcl9uYW1lKSxdXG5kZjJwbG90X2xvbmckbW9kdWxhdG9yX3Jhbms9IHVubGlzdChsYXBwbHkoc3BsaXQoZGYycGxvdF9sb25nLCBkZjJwbG90X2xvbmckbW9kdWxhdG9yX25hbWUpLCBmdW5jdGlvbih4KSByYW5rKHhbLDZdKSkpXG5cbmRmMnBsb3RfcGVhcnNvbj0gZGYycGxvdF9sb25nWyEoZGYycGxvdF9sb25nJGFsbGNhbmNlcl90eXBlcyAlaW4lIGMoJ0tJUkMnKSksXVxuXG5QYW5lbDJfRCA8LSBnZ3Bsb3QoZGYycGxvdF9wZWFyc29uLCBhZXMoeD1lZmZlY3Rfc2l6ZSwgeT0gYWJ1bmRhbmNlLCBzaXplPSAtbG9nKFAsIDEwKSkpICsgXG4gIHN0YXRfc21vb3RoKG1ldGhvZD0nbG0nKStcbiAgZmFjZXRfd3JhcCh+IE1vZHVsYXRvcl90eXBlK21vZHVsYXRvcl9uYW1lLCBzY2FsZXMgPSAnZnJlZScpK1xuICBnZW9tX3BvaW50KCkrXG4gIHRoZW1lX2J3KGJhc2Vfc2l6ZSA9IDE1KStcbiAgICAjIHRoZW1lKGxlZ2VuZC5wb3NpdGlvbiA9ICdub25lJykrXG4gIGxhYnMoeD0nUG93ZXIgb2YgVE1CIChyYW5rKScsXG4gICAgICAgICB5PXBhc3RlKCdBYnVuZGFuY2UnKSwgc2l6ZT0nLWxvZzEwKFApJykrXG4gICMgc3RhdF9jb3IoIG1ldGhvZCA9ICdzJywgY29yLmNvZWYubmFtZSA9ICdyaG8nLCBzaXplPTUpK1xuICBnZW9tX2xhYmVsX3JlcGVsKGFlcyhsYWJlbD0oZGYycGxvdF9wZWFyc29uJGFsbGNhbmNlcl90eXBlcyksIHNpemU9MC45KSkrXG4gIGNvb3JkX2ZsaXAoKVxuICBnZ3NhdmUoJy9Vc2Vycy9uZWVsYW1mMi9Eb2N1bWVudHMvR2l0SHViL0ltbXVuZV9kZXRlcm1pbmFudF9mb3JfcG93ZXJfb2ZfVE1CL1Jlc3VsdF9mZ3VyZXMvT1NfUG93ZXJfb2ZfVE1CX2luXzVfYWJ1X21vZHVsYXRvcnNfc3BlYXIucGRmJyxcbiAgICAgICAgIFBhbmVsMl9ELCBoZWlnaHQ9MTAsIHdpZHRoID0gOSwgdW5pdHMgPSAnaW4nLCBkcGkgPSA1MDApXG5cbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+df2plot=data.frame(allcancer_types,OS_difference[allcancer_types,],
                      immune_factor[allcancer_types,c(22,39,24,37)])
 df2plot= na.omit(df2plot)
 df2plot= df2plot[is.finite(df2plot$effect_size),]
@@ -1922,17 +1957,17 @@ df2plot$rank= rank(df2plot$effect_size)
 df2plot_long= gather(df2plot, modulator_name, abundance,
                       M1.macrophage.:PDL1..combined.positive.score.,factor_key = T )
 
-df2plot_long$modulator_name= ifelse(df2plot_long$modulator_name == &quot;M1.macrophage.&quot;, &quot;M1 macrophage&quot;, 
-                                    ifelse(df2plot_long$modulator_name == &quot;Tumor.purity.&quot;, &quot;Tumor purity&quot;,
-                                           ifelse(df2plot_long$modulator_name == &quot;Resting.dendritic.cells.&quot;
-                                                  ,&quot;Resting dendritic cells&quot;, 
-                                                 ifelse(df2plot_long$modulator_name == &quot;Active.dendritic.cells.&quot;,
-                                                  &quot;Active dendritic cells&quot;, &quot;PDL1 combined positive score&quot;))))
+df2plot_long$modulator_name= ifelse(df2plot_long$modulator_name == \M1.macrophage.\, \M1 macrophage\, 
+                                    ifelse(df2plot_long$modulator_name == \Tumor.purity.\, \Tumor purity\,
+                                           ifelse(df2plot_long$modulator_name == \Resting.dendritic.cells.\
+                                                  ,\Resting dendritic cells\, 
+                                                 ifelse(df2plot_long$modulator_name == \Active.dendritic.cells.\,
+                                                  \Active dendritic cells\, \PDL1 combined positive score\))))
 
 df2plot_long$Modulator_type = ifelse(df2plot_long$modulator_name %in% 
-                                     c(&quot;M1 macrophage&quot;,&quot;Tumor purity&quot;), 
-                                     &quot;Positive modulator&quot;, 
-                                     &quot;Negative modulator&quot;)
+                                     c(\M1 macrophage\,\Tumor purity\), 
+                                     \Positive modulator\, 
+                                     \Negative modulator\)
 
 
 # unlist(lapply(split(df2plot_long, df2plot_long$modulator_name), function(x) rank(x[,6])))
@@ -1956,13 +1991,27 @@ Panel2_D &lt;- ggplot(df2plot_pearson, aes(x=effect_size, y= abundance, size= -l
   ggsave(&#39;/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/OS_Power_of_TMB_in_5_abu_modulators_spear.pdf&#39;,
          Panel2_D, height=10, width = 9, units = &#39;in&#39;, dpi = 500)
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZmVhdHVyZXM9cm93bmFtZXMoRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1sxXV0pXG5kZl9hbGxfY29yPWRhdGEuZnJhbWUoZmVhdHVyZXM9cm93bmFtZXMoRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1sxXV0pLFxuICAgICAgICAgICBwZnNfU2lnPUZpZ19QRlNfT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlc1tbMV1dW2ZlYXR1cmVzLF0kZXN0aW1hdGUucmhvLCBcbiAgICAgICAgICAgcGZzX2FsbD1GaWdfUEZTX2FsbGNhbmNlcl90eXBlc1tbMV1dW2ZlYXR1cmVzLF0kZXN0aW1hdGUucmhvLFxuICAgICAgICAgICBvc19zaWc9RmlnX09TX09ubHlfU2lnX1RtYi5SZXNwX2Fzc29jaWF0ZWRfY2FuY2VyVHlwZXNbWzFdXVtmZWF0dXJlcyxdJGVzdGltYXRlLnJobywgXG4gICAgICAgICAgIG9zX2FsbD1GaWdfT1NfYWxsY2FuY2VyX3R5cGVzW1sxXV1bZmVhdHVyZXMsXSRlc3RpbWF0ZS5yaG8sXG4gICAgICAgICAgIG9ycl9zaWc9IEZpZ19PUlJfT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlc1tbMV1dW2ZlYXR1cmVzLF0kZXN0aW1hdGUucmhvLFxuICAgICAgICAgICBvcnJfYWxsID0gRmlnX09SUl9hbGxjYW5jZXJfdHlwZXNbWzFdXVtmZWF0dXJlcyxdJGVzdGltYXRlLnJobylcbmRmX2FsbF9jb3JbLDFdPWdzdWIoJ1xcXFwuJywnICcsZ3N1YignXFxcXC5cXFxcLicsJyAnLGRmX2FsbF9jb3JbLDFdKSlcbmZlYXR1cmVzX3JhbmtlZD1kZl9hbGxfY29yW29yZGVyKHJvd01lYW5zKGFwcGx5KGFicyhkZl9hbGxfY29yWywtMV0pLCAyLCByYW5rKSksIGRlY3JlYXNpbmcgPSBUKSwxXVxubWVhbih1bmxpc3QoZGZfYWxsX2NvcltncmVwKCdDb21iaW5lZCcsZGZfYWxsX2NvciRmZWF0dXJlcywgaWdub3JlLmNhc2UgPSBUKSwtMV0pKVxuZGZfYWxsX2NvclxucmFua2VkX3Njb3JlX3RvcF9tb2RzPWFwcGx5KGFicyhkZl9hbGxfY29yWywtMV0pLCAyLCByYW5rKVtkZl9hbGxfY29yWywxXSAlaW4lIGhlYWQoZmVhdHVyZXNfcmFua2VkLCA1KSxdXG5yb3VuZChyb3dNZWFucyhkZl9hbGxfY29yW21hdGNoKGhlYWQoZmVhdHVyZXNfcmFua2VkLCA1KSwgZGZfYWxsX2NvclssMV0pLC0xXSksIDIpXG5gYGAifQ== -->
-<pre class="r"><code>features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]])
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuZmVhdHVyZXM9cm93bmFtZXMoRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1sxXV0pXG5kZl9hbGxfY29yPWRhdGEuZnJhbWUoZmVhdHVyZXM9cm93bmFtZXMoRmlnX1BGU19Pbmx5X1NpZ19UbWIuUmVzcF9hc3NvY2lhdGVkX2NhbmNlclR5cGVzW1sxXV0pLFxuICAgICAgICAgICBwZnNfU2lnPUZpZ19QRlNfT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlc1tbMV1dW2ZlYXR1cmVzLF0kZXN0aW1hdGUucmhvLCBcbiAgICAgICAgICAgcGZzX2FsbD1GaWdfUEZTX2FsbGNhbmNlcl90eXBlc1tbMV1dW2ZlYXR1cmVzLF0kZXN0aW1hdGUucmhvLFxuICAgICAgICAgICBvc19zaWc9RmlnX09TX09ubHlfU2lnX1RtYi5SZXNwX2Fzc29jaWF0ZWRfY2FuY2VyVHlwZXNbWzFdXVtmZWF0dXJlcyxdJGVzdGltYXRlLnJobywgXG4gICAgICAgICAgIG9zX2FsbD1GaWdfT1NfYWxsY2FuY2VyX3R5cGVzW1sxXV1bZmVhdHVyZXMsXSRlc3RpbWF0ZS5yaG8sXG4gICAgICAgICAgIG9ycl9zaWc9IEZpZ19PUlJfT25seV9TaWdfVG1iLlJlc3BfYXNzb2NpYXRlZF9jYW5jZXJUeXBlc1tbMV1dW2ZlYXR1cmVzLF0kZXN0aW1hdGUucmhvLFxuICAgICAgICAgICBvcnJfYWxsID0gRmlnX09SUl9hbGxjYW5jZXJfdHlwZXNbWzFdXVtmZWF0dXJlcyxdJGVzdGltYXRlLnJobylcbmRmX2FsbF9jb3JbLDFdPWdzdWIoJ1xcXFwuJywnICcsZ3N1YignXFxcXC5cXFxcLicsJyAnLGRmX2FsbF9jb3JbLDFdKSlcbmZlYXR1cmVzX3JhbmtlZD1kZl9hbGxfY29yW29yZGVyKHJvd01lYW5zKGFwcGx5KGFicyhkZl9hbGxfY29yWywtMV0pLCAyLCByYW5rKSksIGRlY3JlYXNpbmcgPSBUKSwxXVxubWVhbih1bmxpc3QoZGZfYWxsX2NvcltncmVwKCdDb21iaW5lZCcsZGZfYWxsX2NvciRmZWF0dXJlcywgaWdub3JlLmNhc2UgPSBUKSwtMV0pKVxuZGZfYWxsX2NvclxucmFua2VkX3Njb3JlX3RvcF9tb2RzPWFwcGx5KGFicyhkZl9hbGxfY29yWywtMV0pLCAyLCByYW5rKVtkZl9hbGxfY29yWywxXSAlaW4lIGhlYWQoZmVhdHVyZXNfcmFua2VkLCA1KSxdXG5yb3VuZChyb3dNZWFucyhkZl9hbGxfY29yW21hdGNoKGhlYWQoZmVhdHVyZXNfcmFua2VkLCA1KSwgZGZfYWxsX2NvclssMV0pLC0xXSksIDIpXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]])
 df_all_cor=data.frame(features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]]),
            pfs_Sig=Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]][features,]$estimate.rho, 
            pfs_all=Fig_PFS_allcancer_types[[1]][features,]$estimate.rho,
@@ -1976,14 +2025,27 @@ mean(unlist(df_all_cor[grep(&#39;Combined&#39;,df_all_cor$features, ignore.case 
 df_all_cor
 ranked_score_top_mods=apply(abs(df_all_cor[,-1]), 2, rank)[df_all_cor[,1] %in% head(features_ranked, 5),]
 round(rowMeans(df_all_cor[match(head(features_ranked, 5), df_all_cor[,1]),-1]), 2)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- Figure 2C (Panel2)-->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTWVhbkNvcnJfZGY9ZGF0YS5mcmFtZShNb2R1bGF0b3JzPWRmX2FsbF9jb3JbLDFdLFxuICAgICAgICAgICAgICAgICAgICAgICBQRlM9cm93TWVhbnMoZGZfYWxsX2NvclssMjozXSksXG4gICAgICAgICAgICAgICAgICAgICAgIE9TPXJvd01lYW5zKGRmX2FsbF9jb3JbLDQ6NV0pLFxuICAgICAgICAgICAgICAgICAgICAgICBkdXJhYmxlX3Jlc3BvbnNlPXJvd01lYW5zKGRmX2FsbF9jb3JbLDI6NV0pLFxuICAgICAgICAgICAgICAgICAgICAgICBPUlI9IHJvd01lYW5zKGRmX2FsbF9jb3JbLDY6N10pKVxuTWVhbkNvcnJfZGYkbW9kX2xhYmVscz0nJ1xuTWVhbkNvcnJfZGYkbW9kX2xhYmVsc1ttYXRjaChoZWFkKGZlYXR1cmVzX3JhbmtlZClbYygxLDIsMyw1KV0sTWVhbkNvcnJfZGYkTW9kdWxhdG9ycyldPWhlYWQoZmVhdHVyZXNfcmFua2VkKVtjKDEsMiwzLDUpXVxuXG5wYW5lbDJfQz1nZ3Bsb3QoTWVhbkNvcnJfZGYsIGFlcyh4PU9SUiwgeT1kdXJhYmxlX3Jlc3BvbnNlLCBsYWJlbD1tb2RfbGFiZWxzKSkrXG4gIGdlb21fcG9pbnQoYWVzKGNvbG9yPSBtb2RfbGFiZWxzIT0nJykpK1xuICBnZW9tX2xhYmVsX3JlcGVsKG1pbi5zZWdtZW50Lmxlbmd0aCA9IDAsIHNpemU9MykrXG4gIHRoZW1lX2J3KGJhc2Vfc2l6ZSA9IDEwKStcbiAgc2NhbGVfY29sb3JfbWFudWFsKHZhbHVlcyA9IGMoXCJkYXJrZ3JleVwiLFwiYmx1ZVwiKSkrXG4gIGxhYnMoeD0nQ29ycmVsYXRpb24gc3RyZW5ndGggd2l0aCBUTUIgUG93ZXIgKFVzaW5nIE9SUiknLFxuICAgICAgIHk9J0NvcnJlbGF0aW9uIHN0cmVuZ3RoIHdpdGggVE1CIFBvd2VyIChVc2luZyBPUy9QRlMpJykrXG4gIHRoZW1lKGxlZ2VuZC5wb3NpdGlvbiA9ICdub25lJylcbiAgXG5nZ3NhdmUoJy9Vc2Vycy9uZWVsYW1mMi9Eb2N1bWVudHMvR2l0SHViL0ltbXVuZV9kZXRlcm1pbmFudF9mb3JfcG93ZXJfb2ZfVE1CL1Jlc3VsdF9mZ3VyZXMvUGFuZWxfMl9DLnBkZicsIHBhbmVsMl9DLCBoZWlnaHQ9NCwgd2lkdGggPSA0LCB1bml0cyA9ICdpbicsIGRwaSA9IDUwMClcblxuXG5gYGAifQ== -->
-<pre class="r"><code>MeanCorr_df=data.frame(Modulators=df_all_cor[,1],
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+&lt;!-- Figure 2C (Panel2)--&gt;
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuTWVhbkNvcnJfZGY9ZGF0YS5mcmFtZShNb2R1bGF0b3JzPWRmX2FsbF9jb3JbLDFdLFxuICAgICAgICAgICAgICAgICAgICAgICBQRlM9cm93TWVhbnMoZGZfYWxsX2NvclssMjozXSksXG4gICAgICAgICAgICAgICAgICAgICAgIE9TPXJvd01lYW5zKGRmX2FsbF9jb3JbLDQ6NV0pLFxuICAgICAgICAgICAgICAgICAgICAgICBkdXJhYmxlX3Jlc3BvbnNlPXJvd01lYW5zKGRmX2FsbF9jb3JbLDI6NV0pLFxuICAgICAgICAgICAgICAgICAgICAgICBPUlI9IHJvd01lYW5zKGRmX2FsbF9jb3JbLDY6N10pKVxuTWVhbkNvcnJfZGYkbW9kX2xhYmVscz0nJ1xuTWVhbkNvcnJfZGYkbW9kX2xhYmVsc1ttYXRjaChoZWFkKGZlYXR1cmVzX3JhbmtlZClbYygxLDIsMyw1KV0sTWVhbkNvcnJfZGYkTW9kdWxhdG9ycyldPWhlYWQoZmVhdHVyZXNfcmFua2VkKVtjKDEsMiwzLDUpXVxuXG5wYW5lbDJfQz1nZ3Bsb3QoTWVhbkNvcnJfZGYsIGFlcyh4PU9SUiwgeT1kdXJhYmxlX3Jlc3BvbnNlLCBsYWJlbD1tb2RfbGFiZWxzKSkrXG4gIGdlb21fcG9pbnQoYWVzKGNvbG9yPSBtb2RfbGFiZWxzIT0nJykpK1xuICBnZW9tX2xhYmVsX3JlcGVsKG1pbi5zZWdtZW50Lmxlbmd0aCA9IDAsIHNpemU9MykrXG4gIHRoZW1lX2J3KGJhc2Vfc2l6ZSA9IDEwKStcbiAgc2NhbGVfY29sb3JfbWFudWFsKHZhbHVlcyA9IGMoXFxkYXJrZ3JleVxcLFxcYmx1ZVxcKSkrXG4gIGxhYnMoeD0nQ29ycmVsYXRpb24gc3RyZW5ndGggd2l0aCBUTUIgUG93ZXIgKFVzaW5nIE9SUiknLFxuICAgICAgIHk9J0NvcnJlbGF0aW9uIHN0cmVuZ3RoIHdpdGggVE1CIFBvd2VyIChVc2luZyBPUy9QRlMpJykrXG4gIHRoZW1lKGxlZ2VuZC5wb3NpdGlvbiA9ICdub25lJylcbiAgXG5nZ3NhdmUoJy9Vc2Vycy9uZWVsYW1mMi9Eb2N1bWVudHMvR2l0SHViL0ltbXVuZV9kZXRlcm1pbmFudF9mb3JfcG93ZXJfb2ZfVE1CL1Jlc3VsdF9mZ3VyZXMvUGFuZWxfMl9DLnBkZicsIHBhbmVsMl9DLCBoZWlnaHQ9NCwgd2lkdGggPSA0LCB1bml0cyA9ICdpbicsIGRwaSA9IDUwMClcblxuXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+MeanCorr_df=data.frame(Modulators=df_all_cor[,1],
                        PFS=rowMeans(df_all_cor[,2:3]),
                        OS=rowMeans(df_all_cor[,4:5]),
                        durable_response=rowMeans(df_all_cor[,2:5]),
@@ -1995,20 +2057,34 @@ panel2_C=ggplot(MeanCorr_df, aes(x=ORR, y=durable_response, label=mod_labels))+
   geom_point(aes(color= mod_labels!=&#39;&#39;))+
   geom_label_repel(min.segment.length = 0, size=3)+
   theme_bw(base_size = 10)+
-  scale_color_manual(values = c(&quot;darkgrey&quot;,&quot;blue&quot;))+
+  scale_color_manual(values = c(\darkgrey\,\blue\))+
   labs(x=&#39;Correlation strength with TMB Power (Using ORR)&#39;,
        y=&#39;Correlation strength with TMB Power (Using OS/PFS)&#39;)+
   theme(legend.position = &#39;none&#39;)
   
 ggsave(&#39;/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Panel_2_C.pdf&#39;, panel2_C, height=4, width = 4, units = &#39;in&#39;, dpi = 500)
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlPXJlYWQuY3N2KCcvVXNlcnMvc2luaGFzOC9hcHByb3ZlX3RtYkNyaXRlcmlhX3ZzX2FnZV9TZXgvVG9vbHMvZmRhLXRtYkNyaXRlcmlhLVBvd2VyLXZzLWFnZS1zZXgvRGF0YS9SZXNwb25zZV9yYXRpb19hbGxfVGhyZWUuY3N2JylcblJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0PXNwbGl0KFJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZSwgUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlJFJlc3BfTWVhc3VyZSlcbmNlbGxUWXBlc19hdmFpbGFibGU9UmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlX2xpc3RbWzFdXSRjZWxsVHlwZVxuZm9yX09SPVJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0W1sxXV1bbWF0Y2goY2VsbFRZcGVzX2F2YWlsYWJsZSwgUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlX2xpc3RbWzFdXSRjZWxsVHlwZSksXVxucm93bmFtZXMoZm9yX09SKT1mb3JfT1IkY2VsbFR5cGVcbmZvcl9PUz1SZXNwb25zZV9yYXRpb19hbGxfVGhyZWVfbGlzdFtbMl1dW21hdGNoKGNlbGxUWXBlc19hdmFpbGFibGUsIFJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0W1syXV0kY2VsbFR5cGUpLF1cbnJvd25hbWVzKGZvcl9PUyk9Zm9yX09TJGNlbGxUeXBlXG5mb3JfUEZTPVJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0W1szXV1bbWF0Y2goY2VsbFRZcGVzX2F2YWlsYWJsZSwgUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlX2xpc3RbWzNdXSRjZWxsVHlwZSksXVxucm93bmFtZXMoZm9yX1BGUyk9Zm9yX1BGUyRjZWxsVHlwZVxuYGBgIn0= -->
-<pre class="r"><code>Response_ratio_all_Three=read.csv(&#39;/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Tools/fda-tmbCriteria-Power-vs-age-sex/Data/Response_ratio_all_Three.csv&#39;)
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlPXJlYWQuY3N2KCcvVXNlcnMvc2luaGFzOC9hcHByb3ZlX3RtYkNyaXRlcmlhX3ZzX2FnZV9TZXgvVG9vbHMvZmRhLXRtYkNyaXRlcmlhLVBvd2VyLXZzLWFnZS1zZXgvRGF0YS9SZXNwb25zZV9yYXRpb19hbGxfVGhyZWUuY3N2JylcblJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0PXNwbGl0KFJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZSwgUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlJFJlc3BfTWVhc3VyZSlcbmNlbGxUWXBlc19hdmFpbGFibGU9UmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlX2xpc3RbWzFdXSRjZWxsVHlwZVxuZm9yX09SPVJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0W1sxXV1bbWF0Y2goY2VsbFRZcGVzX2F2YWlsYWJsZSwgUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlX2xpc3RbWzFdXSRjZWxsVHlwZSksXVxucm93bmFtZXMoZm9yX09SKT1mb3JfT1IkY2VsbFR5cGVcbmZvcl9PUz1SZXNwb25zZV9yYXRpb19hbGxfVGhyZWVfbGlzdFtbMl1dW21hdGNoKGNlbGxUWXBlc19hdmFpbGFibGUsIFJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0W1syXV0kY2VsbFR5cGUpLF1cbnJvd25hbWVzKGZvcl9PUyk9Zm9yX09TJGNlbGxUeXBlXG5mb3JfUEZTPVJlc3BvbnNlX3JhdGlvX2FsbF9UaHJlZV9saXN0W1szXV1bbWF0Y2goY2VsbFRZcGVzX2F2YWlsYWJsZSwgUmVzcG9uc2VfcmF0aW9fYWxsX1RocmVlX2xpc3RbWzNdXSRjZWxsVHlwZSksXVxucm93bmFtZXMoZm9yX1BGUyk9Zm9yX1BGUyRjZWxsVHlwZVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+Response_ratio_all_Three=read.csv(&#39;/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Tools/fda-tmbCriteria-Power-vs-age-sex/Data/Response_ratio_all_Three.csv&#39;)
 Response_ratio_all_Three_list=split(Response_ratio_all_Three, Response_ratio_all_Three$Resp_Measure)
 cellTYpes_available=Response_ratio_all_Three_list[[1]]$cellType
 for_OR=Response_ratio_all_Three_list[[1]][match(cellTYpes_available, Response_ratio_all_Three_list[[1]]$cellType),]
@@ -2017,13 +2093,27 @@ for_OS=Response_ratio_all_Three_list[[2]][match(cellTYpes_available, Response_ra
 rownames(for_OS)=for_OS$cellType
 for_PFS=Response_ratio_all_Three_list[[3]][match(cellTYpes_available, Response_ratio_all_Three_list[[3]]$cellType),]
 rownames(for_PFS)=for_PFS$cellType</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9kdWxhdG9yX2NlbGxzPU1lYW5Db3JyX2RmJE1vZHVsYXRvcnNbYygxLCAyLCAzLCA0LCAxMiwgMTQsIDE1LCAxNywgMTksIDIwLCAyMSwgMjUsIDI4LCAyOSwgMzAsIDMxLCAzNCwgMzUsIDM2KV1cbm1hdGNoKHN0cmlwYWxsMm1hdGNoKG1vZHVsYXRvcl9jZWxscyksIHN0cmlwYWxsMm1hdGNoKGZvcl9PUyRjZWxsVHlwZSkpXG5cbmRmMnBsb3Q9ZGF0YS5mcmFtZShtb2R1bGF0b3I9Zm9yX09TJGNlbGxUeXBlLFxuICAgICAgICAgICBocl9vcz1mb3JfT1MkSFJfUmF0aW8sXG4gICAgICAgICAgIGhyX29yPWZvcl9PUiRIUl9SYXRpbywgXG4gICAgICAgICAgIGhyX3Bmcz1mb3JfUEZTJEhSX1JhdGlvKVxuZGYycGxvdCR0b3Bsb3Q9JydcbmRmMnBsb3QkdG9wbG90W21hdGNoKGMoXCJEZW5kcml0aWMuY2VsbHMuYWN0aXZhdGVkXCIsIFwiRGVuZHJpdGljLmNlbGxzLnJlc3RpbmdcIixcbiAgICAgICAgICAgICAgICAgICAgICAgXCJNYWNyb3BoYWdlcy5NMVwiKSwgXG4gICAgICAgICAgICAgICAgICAgICBkZjJwbG90JG1vZHVsYXRvcildPWMoXCJEZW5kcml0aWMuY2VsbHMuYWN0aXZhdGVkXCIsIFwiRGVuZHJpdGljLmNlbGxzLnJlc3RpbmdcIixcbiAgICAgICAgICAgICAgICAgICAgICAgXCJNYWNyb3BoYWdlcy5NMVwiKVxuZGYycGxvdCRkdXJhYmxlX2hyPXJvd01lYW5zKGRhdGEuZnJhbWUoZGYycGxvdCRocl9vcyxkZjJwbG90JGhyX3BmcykpXG5cbnBhbmxlNT1nZ3Bsb3QoZGYycGxvdCwgYWVzKHg9IHJhbmsoaHJfb3IpLCB5PXJhbmsoaHJfcGZzKSwgbGFiZWw9dG9wbG90KSkrXG4gICAgZ2VvbV9wb2ludCgpK1xuICAgIGdlb21fbGFiZWxfcmVwZWwoKStcbiAgICB0aGVtZV9idyhiYXNlX3NpemUgPSAxNSkrXG4gIGxhYnMoeD0nUmF0aW8gb2Ygb2RkcyByYXRpbyAoVE1CLUlDQiByZXNwb25zZSkgYmV0d2VlbiBcXG5oaWdoIHZzIGxvdyBtb2R1bGF0b3IgbGV2ZWxzIGdyb3VwJyxcbiAgICAgICB5PSdSYXRpbyBvZiBoYXphcmQgcmF0aW8gKFRNQi1JQ0IgT1MvUEZTKSBiZXR3ZWVuIFxcbmhpZ2ggdnMgbG93IG1vZHVsYXRvciBsZXZlbHMgZ3JvdXAnKVxuXG5nZ3NhdmUocGFzdGUoJy9Vc2Vycy9zaW5oYXM4L2FwcHJvdmVfdG1iQ3JpdGVyaWFfdnNfYWdlX1NleC9SZXN1bHRzX0ZpZ3VyZXMvUGFuZWw1LnRpZmYnLCBzZXAgPScnICksXG4gICAgICAgcGFubGU1LCBoZWlnaHQ9Niwgd2lkdGggPSA2LCB1bml0cyA9ICdpbicsIGRwaSA9IDUwMClcblxuXG5gYGAifQ== -->
-<pre class="r"><code>modulator_cells=MeanCorr_df$Modulators[c(1, 2, 3, 4, 12, 14, 15, 17, 19, 20, 21, 25, 28, 29, 30, 31, 34, 35, 36)]
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubW9kdWxhdG9yX2NlbGxzPU1lYW5Db3JyX2RmJE1vZHVsYXRvcnNbYygxLCAyLCAzLCA0LCAxMiwgMTQsIDE1LCAxNywgMTksIDIwLCAyMSwgMjUsIDI4LCAyOSwgMzAsIDMxLCAzNCwgMzUsIDM2KV1cbm1hdGNoKHN0cmlwYWxsMm1hdGNoKG1vZHVsYXRvcl9jZWxscyksIHN0cmlwYWxsMm1hdGNoKGZvcl9PUyRjZWxsVHlwZSkpXG5cbmRmMnBsb3Q9ZGF0YS5mcmFtZShtb2R1bGF0b3I9Zm9yX09TJGNlbGxUeXBlLFxuICAgICAgICAgICBocl9vcz1mb3JfT1MkSFJfUmF0aW8sXG4gICAgICAgICAgIGhyX29yPWZvcl9PUiRIUl9SYXRpbywgXG4gICAgICAgICAgIGhyX3Bmcz1mb3JfUEZTJEhSX1JhdGlvKVxuZGYycGxvdCR0b3Bsb3Q9JydcbmRmMnBsb3QkdG9wbG90W21hdGNoKGMoXFxEZW5kcml0aWMuY2VsbHMuYWN0aXZhdGVkXFwsIFxcRGVuZHJpdGljLmNlbGxzLnJlc3RpbmdcXCxcbiAgICAgICAgICAgICAgICAgICAgICAgXFxNYWNyb3BoYWdlcy5NMVxcKSwgXG4gICAgICAgICAgICAgICAgICAgICBkZjJwbG90JG1vZHVsYXRvcildPWMoXFxEZW5kcml0aWMuY2VsbHMuYWN0aXZhdGVkXFwsIFxcRGVuZHJpdGljLmNlbGxzLnJlc3RpbmdcXCxcbiAgICAgICAgICAgICAgICAgICAgICAgXFxNYWNyb3BoYWdlcy5NMVxcKVxuZGYycGxvdCRkdXJhYmxlX2hyPXJvd01lYW5zKGRhdGEuZnJhbWUoZGYycGxvdCRocl9vcyxkZjJwbG90JGhyX3BmcykpXG5cbnBhbmxlNT1nZ3Bsb3QoZGYycGxvdCwgYWVzKHg9IHJhbmsoaHJfb3IpLCB5PXJhbmsoaHJfcGZzKSwgbGFiZWw9dG9wbG90KSkrXG4gICAgZ2VvbV9wb2ludCgpK1xuICAgIGdlb21fbGFiZWxfcmVwZWwoKStcbiAgICB0aGVtZV9idyhiYXNlX3NpemUgPSAxNSkrXG4gIGxhYnMoeD0nUmF0aW8gb2Ygb2RkcyByYXRpbyAoVE1CLUlDQiByZXNwb25zZSkgYmV0d2VlbiBcXG5oaWdoIHZzIGxvdyBtb2R1bGF0b3IgbGV2ZWxzIGdyb3VwJyxcbiAgICAgICB5PSdSYXRpbyBvZiBoYXphcmQgcmF0aW8gKFRNQi1JQ0IgT1MvUEZTKSBiZXR3ZWVuIFxcbmhpZ2ggdnMgbG93IG1vZHVsYXRvciBsZXZlbHMgZ3JvdXAnKVxuXG5nZ3NhdmUocGFzdGUoJy9Vc2Vycy9zaW5oYXM4L2FwcHJvdmVfdG1iQ3JpdGVyaWFfdnNfYWdlX1NleC9SZXN1bHRzX0ZpZ3VyZXMvUGFuZWw1LnRpZmYnLCBzZXAgPScnICksXG4gICAgICAgcGFubGU1LCBoZWlnaHQ9Niwgd2lkdGggPSA2LCB1bml0cyA9ICdpbicsIGRwaSA9IDUwMClcblxuXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+modulator_cells=MeanCorr_df$Modulators[c(1, 2, 3, 4, 12, 14, 15, 17, 19, 20, 21, 25, 28, 29, 30, 31, 34, 35, 36)]
 match(stripall2match(modulator_cells), stripall2match(for_OS$cellType))
 
 df2plot=data.frame(modulator=for_OS$cellType,
@@ -2031,10 +2121,10 @@ df2plot=data.frame(modulator=for_OS$cellType,
            hr_or=for_OR$HR_Ratio, 
            hr_pfs=for_PFS$HR_Ratio)
 df2plot$toplot=&#39;&#39;
-df2plot$toplot[match(c(&quot;Dendritic.cells.activated&quot;, &quot;Dendritic.cells.resting&quot;,
-                       &quot;Macrophages.M1&quot;), 
-                     df2plot$modulator)]=c(&quot;Dendritic.cells.activated&quot;, &quot;Dendritic.cells.resting&quot;,
-                       &quot;Macrophages.M1&quot;)
+df2plot$toplot[match(c(\Dendritic.cells.activated\, \Dendritic.cells.resting\,
+                       \Macrophages.M1\), 
+                     df2plot$modulator)]=c(\Dendritic.cells.activated\, \Dendritic.cells.resting\,
+                       \Macrophages.M1\)
 df2plot$durable_hr=rowMeans(data.frame(df2plot$hr_os,df2plot$hr_pfs))
 
 panle5=ggplot(df2plot, aes(x= rank(hr_or), y=rank(hr_pfs), label=toplot))+
@@ -2047,6 +2137,7 @@ panle5=ggplot(df2plot, aes(x= rank(hr_or), y=rank(hr_pfs), label=toplot))+
 ggsave(paste(&#39;/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Results_Figures/Panel5.tiff&#39;, sep =&#39;&#39; ),
        panle5, height=6, width = 6, units = &#39;in&#39;, dpi = 500)
 </code></pre>
+<p>```</p>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->

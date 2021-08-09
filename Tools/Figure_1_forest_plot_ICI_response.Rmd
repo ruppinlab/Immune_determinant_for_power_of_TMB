@@ -1,36 +1,113 @@
+---
+title: "Figure 1 and extended figure 1 forest plot"
+output: html_document
+---
+<!-- Library-->
+```{r}
 library(forestplot)
+```
 
-#################################################################
-# Forest plot for OS vs TMB >= 10 all cancer type
-#original r script step 13 OS where made function for it
-#################################################################
+<!-- Run s0 and s1 to load and preprocess the data and functions required-->
+<!-- Function required for figure1-->
+```{r}
+Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
+                                             COI="NSCLC",
+                                             response_measure='ORR'){
+  infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type_acronym == COI)),]
+  #infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
+  
+  if(response_measure=='ORR'){
+    infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+    # Contigency matrix
+    cont_matrix=table( infunc_df_tmb$TMB>=10, infunc_df_tmb$ORR)
+    # Perform fisher test
+    fisher_test_results_raw=fisher.test(cont_matrix)
+    to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
+                P=fisher_test_results_raw$p.value,
+                lower_ci=fisher_test_results_raw$conf.int[1],
+                upper_ci=fisher_test_results_raw$conf.int[2])
+  } else if(response_measure =='OS') {
+    infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
+    # Perform coxph test
+    coxph_model <- coxph(Surv(time = Overall_survival_months,
+                              event = Overall_survival_status) ~ (TMB >= 10) ,
+                         data = infunc_df_tmb)
+    to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+                P=summary(coxph_model)$coefficients[1,c(5)],
+                lower_ci= summary(coxph_model)$conf.int[1,c(3)],
+                upper_ci= summary(coxph_model)$conf.int[1,c(4)])
+  }  else if(response_measure=='PFS') {
+    infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
+    coxph_model <- coxph(Surv(time = PFS_months,
+                              event = PFS_status) ~ (TMB>=10) ,
+                         data = infunc_df_tmb)
+    to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+                P=summary(coxph_model)$coefficients[1,c(5)],
+                lower_ci= summary(coxph_model)$conf.int[1,c(3)],
+                upper_ci= summary(coxph_model)$conf.int[1,c(4)])
+  }
+  names(to_return)=c('effect_size', 'P', 'lower_ci', 'upper_ci')
+  to_return
+}
+```
+
+```{r}
+allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
+OS_cox_results= do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(Calculate_TMB_Response_association_with_CI(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                response_measure='OS'))))
+OS_cox_results<- data.frame(OS_cox_results)
+rownames(OS_cox_results)=allcancer_types
+
+## PFS
+allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
+PFS_cox_results= do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(Calculate_TMB_Response_association_with_CI(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                response_measure='PFS'))))
+PFS_cox_results<- data.frame(PFS_cox_results)
+rownames(PFS_cox_results)=allcancer_types
+
+## ORR
+ORR_cox_results= do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(Calculate_TMB_Response_association_with_CI(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                response_measure='ORR'))))
+ORR_cox_results<- data.frame(ORR_cox_results)
+rownames(ORR_cox_results)=allcancer_types
+```
+
+<!--#################################################################
+# Figure 1A: Forest plot for OS vs TMB >= 10 all cancer type
+################################################################# --->
+```{r}
 all_cancertype = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
-cox_results_of_TMB_plot= OS_cox_results
-cox_results_of_TMB_plot= cox_results_of_TMB_plot[all_cancertype,]# remove cancer type less than 50
-cox_results_of_TMB_plot= na.omit(cox_results_of_TMB_plot)
-cox_results_of_TMB_plot=cox_results_of_TMB_plot[
-            order(cox_results_of_TMB_plot$effect_size, decreasing = F),]
+Figure_1A_plot_df= OS_cox_results
+Figure_1A_plot_df= Figure_1A_plot_df[all_cancertype,]
+Figure_1A_plot_df= na.omit(Figure_1A_plot_df)
+Figure_1A_plot_df=Figure_1A_plot_df[ order(Figure_1A_plot_df$effect_size, decreasing = F),]
 
 
-cox_results_of_TMB_plot= cox_results_of_TMB_plot[!(rownames(cox_results_of_TMB_plot)%in% c('SCLC',
-                                                                                           "STAD",
-                                                                                            'KIRC',
-                                                                                           # 'PAAD',
-                                                                              "Unknown-Primary")),]
-colnames(cox_results_of_TMB_plot)[2] = "pval"
+Figure_1A_plot_df= Figure_1A_plot_df[!(rownames(Figure_1A_plot_df)%in% c('SCLC',
+                                                                         "STAD",
+                                                                         'KIRC',
+                                                                         # 'PAAD',
+                                                                         "Unknown-Primary")),]
+colnames(Figure_1A_plot_df)[2] = "pval"
 ### number of Samples 
 no_of_samples_os= samples_by_cancer_type[samples_by_cancer_type[,2]> 1,]
-no_of_samples_os = no_of_samples_os[match(rownames(cox_results_of_TMB_plot),no_of_samples_os$Cancer_Type),]
+no_of_samples_os = no_of_samples_os[match(rownames(Figure_1A_plot_df),no_of_samples_os$Cancer_Type),]
 
 ### plot ###
 tabletext_OS=cbind(c("Cancer Type",
-                      rownames(cox_results_of_TMB_plot)),
+                      rownames(Figure_1A_plot_df)),
                     c("# Samples", 
                       no_of_samples_os$ID),
                     c("pval",
-                      round(cox_results_of_TMB_plot$pval/2, 5)))
+                      round(Figure_1A_plot_df$pval/2, 5)))
 ## data
-HR_OS=(cox_results_of_TMB_plot)
+HR_OS=(Figure_1A_plot_df)
 ### styles for color according to pval
 styles_OS <- fpShapesGp(
   lines = list(gpar(col ="blue"),
@@ -65,9 +142,8 @@ styles_OS <- fpShapesGp(
              gpar(fill = ifelse((HR_OS$pval/2)[13] <0.05, "blue", "red"))
              )
 )
-pdf('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/panel_1_A.pdf',
-    width = 10)
-# plot.new()
+pdf('/Users/neelamf2/Desktop/panel_1_A.pdf', width = 10)
+
 forestplot(tabletext_OS,
            boxsize = .30, # We set the box size to better visualize the type
            line.margin = .30, # We need to add this to avoid crowding
@@ -97,128 +173,37 @@ forestplot(tabletext_OS,
            title = 'Power of TMB of OS between TMB high(>= 10 mut/MB) and TMB low ')
 
 dev.off()
-#################################################################
-# Forest plot for OS vs TMB >= 10 cancer type with sample more than 50
-#################################################################
-cancertype_less_50 = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 50]
-cox_results_of_TMB_plot= cox_results_of_TMB
-cox_results_of_TMB_plot= cox_results_of_TMB_plot[cancertype_less_50,]# remove cancer type less than 50
-cox_results_of_TMB_plot= na.omit(cox_results_of_TMB_plot)
-cox_results_of_TMB_plot=cox_results_of_TMB_plot[
-  order(cox_results_of_TMB_plot$exp.coef., decreasing = F),]
+```
 
-cox_results_of_TMB_plot= cox_results_of_TMB_plot[!(rownames(cox_results_of_TMB_plot)== 'Renal'),]
-colnames(cox_results_of_TMB_plot)[5] = "pval"
-### number of Samples 
-no_of_samples_os= samples_by_cancer_type[samples_by_cancer_type[,2]> 50,]
-no_of_samples_os = no_of_samples_os[match(rownames(cox_results_of_TMB_plot),no_of_samples_os$Cancer_Type),]
-
-### plot ###
-tabletext_OS= cbind(c("Cancer Type",
-                      rownames(cox_results_of_TMB_plot)),
-                    c("# Samples", 
-                      no_of_samples_os$ID),
-                    c("pval",
-                      round(cox_results_of_TMB_plot$pval/2, 5)))
-## data
-HR_OS=(cox_results_of_TMB_plot)
-HR_OS$pvalue= ifelse((HR_OS$pval/2)<0.1, "True","False")
-### styles for color according to pval
-styles_OS <- fpShapesGp(
-  lines = list(gpar(col ="Blue"),
-               gpar(col = ifelse((HR_OS$pval/2)[1] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[2] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[3] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[4] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[5] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[6] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[7] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[8] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[9] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[10] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[11] <0.1, "blue", "red")),
-               gpar(col = ifelse((HR_OS$pval/2)[12] <0.1, "blue", "red"))
-  ),
-  box = list(gpar(fill = "blue"),
-             gpar(fill = ifelse((HR_OS$pval/2)[1] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[2] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[3] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[4] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[5] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[6] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[7] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[8] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[9] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[10] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[11] <0.1, "blue", "red")),
-             gpar(fill = ifelse((HR_OS$pval/2)[12] <0.1, "blue", "red"))
-  )
-  
-)
-
-tiff('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/boxplot2_HR_vs_TMB_gr_50.tiff',
-     width = 750, height=900)
-# plot.new()
-forestplot(tabletext_OS,
-           boxsize = .35, # We set the box size to better visualize the type
-           line.margin = .30, # We need to add this to avoid crowding
-           mean = c(NA,
-                    HR_OS$exp.coef.),
-           lower =c(NA,
-                    HR_OS$lower..95),
-           upper = c(NA,
-                     HR_OS$upper..95),
-           clip=c(0,1,1),
-           lty.ci = c(1),
-           ci.vertices = TRUE,
-           graph.pos=3, # position of the box plot
-           graphwidth = unit(13,"cm"),
-           colgap = unit(0.75,"mm"),
-           # col=fpColors(box=c("blue")),
-           xlab="Hazard Ratio",
-           ylab= "Cancer Types",
-           shapes_gp= styles_OS,
-           txt_gp = fpTxtGp(label = list(gpar(fontface = 1,cex= 1.5),
-                                         gpar(fontface = 1, cex= 1.5), 
-                                         gpar(fontface = 1,cex=1.5)),
-                            ticks=gpar(cex=1.25),
-                            xlab = gpar(cex=1.25),
-                            title = gpar(fontface = 2,cex= 1.48)),
-           grid = structure(c(1), gp = gpar(lty = 2, col = "#CCCCFF")),
-           title = 'HR of Overall Survival between TMB high(>= 10 mut/MB) and TMB low ')
-# legend("topright",legend = c("TRUE", "FALSE"),ncol = 2,title="Pvalues", 
-#                border="#CCCCCC", box.lwd=1.5, 
-#                col=c("blue", "red"))
-dev.off()
-#################################################################
-# Forest plot for ORR vs TMB cancer type with sample more than 50/all
-# original r script step 16 ORR when initial function is given
-#################################################################
+<!--#################################################################
+# Figure 1B: Forest plot for ORR vs TMB cancer type with sample more than 50/all
+################################################################# --->
+```{r}
 cancertype = samples_each_cancer_type[,3][samples_each_cancer_type[,2]> 1]
-response_result_with_TMB_plot= ORR_cox_results[rownames(ORR_cox_results) %in% cancertype,]
-response_result_with_TMB_plot= response_result_with_TMB_plot[!is.na(response_result_with_TMB_plot$effect_size) & 
-                                                             is.finite(response_result_with_TMB_plot$effect_size),]
+ORR_cox_results
+Figure_1B_plot_df= ORR_cox_results[rownames(ORR_cox_results) %in% cancertype,]
+Figure_1B_plot_df= Figure_1B_plot_df[!is.na(Figure_1B_plot_df$effect_size) & 
+                                                             is.finite(Figure_1B_plot_df$effect_size),]
 
-response_result_with_TMB_plot= response_result_with_TMB_plot[!(rownames(response_result_with_TMB_plot) %in% c("STAD",
-                                                                                                      'PAAD',
-                                                                                                     "Unknown-Primary")),]
-response_result_with_TMB_plot=response_result_with_TMB_plot[order(response_result_with_TMB_plot$effect_size,
+Figure_1B_plot_df= Figure_1B_plot_df[!(rownames(Figure_1B_plot_df) %in% c("STAD",
+                                                                          'PAAD',
+                                                                          "Unknown-Primary")),]
+Figure_1B_plot_df=Figure_1B_plot_df[order(Figure_1B_plot_df$effect_size,
                                                                   decreasing = F),]
 
 no_of_samples= samples_each_cancer_type[samples_by_cancer_type$ID >1,]
-no_of_samples= no_of_samples[match(rownames(response_result_with_TMB_plot),no_of_samples$cancer_acronym),]
+no_of_samples= no_of_samples[match(rownames(Figure_1B_plot_df),no_of_samples$cancer_acronym),]
 
-colnames(response_result_with_TMB_plot)[2]= "pval"
+colnames(Figure_1B_plot_df)[2]= "pval"
 ### plot ###
 tabletext_ORR= cbind(c("Cancer Type",
-                   rownames(response_result_with_TMB_plot)), 
+                   rownames(Figure_1B_plot_df)), 
                  c("# patient",
                    no_of_samples$ID),
                  c("pval",
-                   c(round(response_result_with_TMB_plot$pval[1],5),
-                   round(response_result_with_TMB_plot$pval[2:11]/2, 5))))
+                   round(Figure_1B_plot_df$pval/2, 5)))
 
-HR_ORR=response_result_with_TMB_plot
+HR_ORR=Figure_1B_plot_df
 styles <- fpShapesGp(
   lines = list(gpar(col = ifelse((HR_ORR$pval/2) <0.05, "blue", "red")),
                                 gpar(col = ifelse((HR_ORR$pval/2)[1] <0.05, "blue", "red")),
@@ -230,8 +215,8 @@ styles <- fpShapesGp(
                                 gpar(col = ifelse((HR_ORR$pval/2)[7] <0.05, "blue", "red")),
                                 gpar(col = ifelse((HR_ORR$pval/2)[8] <0.05, "blue", "red")),
                                 gpar(col = ifelse((HR_ORR$pval/2)[9] <0.05, "blue", "red")),
-                                gpar(col = ifelse((HR_ORR$pval/2)[10] <0.05, "blue", "red")),
-                                gpar(col = ifelse((HR_ORR$pval/2)[11] <0.05, "blue", "red"))
+                                gpar(col = ifelse((HR_ORR$pval/2)[10] <0.05, "blue", "red"))
+                                # , gpar(col = ifelse((HR_ORR$pval/2)[10] <0.05, "blue", "red"))
                ),
   box = list(gpar(fill = ifelse((HR_ORR$pval/2) <0.05, "blue", "red")),
              gpar(fill = ifelse((HR_ORR$pval/2)[1] <0.05, "blue", "red")),
@@ -243,11 +228,11 @@ styles <- fpShapesGp(
              gpar(fill = ifelse((HR_ORR$pval/2)[7] <0.05, "blue", "red")),
              gpar(fill = ifelse((HR_ORR$pval/2)[8] <0.05, "blue", "red")),
              gpar(fill = ifelse((HR_ORR$pval/2)[9] <0.05, "blue", "red")),
-             gpar(fill = ifelse((HR_ORR$pval/2)[10] <0.05, "blue", "red")),
-             gpar(fill = ifelse((HR_ORR$pval/2)[11] <0.05, "blue", "red"))
+             gpar(fill = ifelse((HR_ORR$pval/2)[10] <0.05, "blue", "red"))
+             # ,gpar(fill = ifelse((HR_ORR$pval/2)[11] <0.05, "blue", "red"))
              )
 )
-pdf('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/panel_1_B.pdf',
+pdf('/Users/neelamf2/Desktop/panel_1_B.pdf',
      width = 10)
 
 forestplot(tabletext_ORR,
@@ -280,38 +265,40 @@ forestplot(tabletext_ORR,
 
 
 dev.off()
-#################################################################
-# Forest plot for PFS vs TMB cancer type with sample more than 50/ all
-# original r script step 15 ORR when initial function is given
-#################################################################
+```
+
+<!-- #################################################################
+# Extended Figure 1: Forest plot for PFS vs TMB cancer type with sample more than 50/ all
+#################################################################-->
+```{r}
 cancertype = samples_each_cancer_type[,3][samples_each_cancer_type[,2]> 1]
 
 
-PFS_result_with_TMB_plot= PFS_cox_results
-PFS_result_with_TMB_plot= PFS_result_with_TMB_plot[rownames(PFS_result_with_TMB_plot) 
+Ex_figure_1_plot_df= PFS_cox_results
+Ex_figure_1_plot_df= Ex_figure_1_plot_df[rownames(Ex_figure_1_plot_df) 
                                                    %in% cancertype,]# remove cancer type less than 50
-PFS_result_with_TMB_plot= na.omit(PFS_result_with_TMB_plot)
-PFS_result_with_TMB_plot= PFS_result_with_TMB_plot[!(rownames(PFS_result_with_TMB_plot) %in% c('KIRC',
+Ex_figure_1_plot_df= na.omit(Ex_figure_1_plot_df)
+Ex_figure_1_plot_df= Ex_figure_1_plot_df[!(rownames(Ex_figure_1_plot_df) %in% c('KIRC',
                                                                                                "STAD",
-                                                                                                'SCLC',
+                                                                                               'SCLC',
                                                                                                "Unknown-Primary")),]
-PFS_result_with_TMB_plot=PFS_result_with_TMB_plot[
-  order(PFS_result_with_TMB_plot$effect_size, decreasing = F),]
+Ex_figure_1_plot_df=Ex_figure_1_plot_df[
+  order(Ex_figure_1_plot_df$effect_size, decreasing = F),]
 
-colnames(PFS_result_with_TMB_plot)[2] = "pval"
+colnames(Ex_figure_1_plot_df)[2] = "pval"
 ### number of Samples 
 no_of_samples_PFS= samples_each_cancer_type[samples_by_cancer_type$ID >1,]
-no_of_samples_PFS = no_of_samples_PFS[match(rownames(PFS_result_with_TMB_plot),no_of_samples_PFS$cancer_acronym),]
-# no_of_samples_PFS$cancer_acronym= PFS_result_with_TMB_plot$cancer_acorymn
+no_of_samples_PFS = no_of_samples_PFS[match(rownames(Ex_figure_1_plot_df),no_of_samples_PFS$cancer_acronym),]
+
 ### plot ###
 tabletext_PFS= cbind(c("Cancer Type",
-                      rownames(PFS_result_with_TMB_plot)),
+                      rownames(Ex_figure_1_plot_df)),
                     c("# Samples", 
                       no_of_samples_PFS$ID),
                     c("pval",
-                      round(PFS_result_with_TMB_plot$pval/2, 8)))
+                      round(Ex_figure_1_plot_df$pval/2, 8)))
 ## data
-HR_PFS=PFS_result_with_TMB_plot
+HR_PFS=Ex_figure_1_plot_df
 ### styles for color according to pval
 styles_PFS <- fpShapesGp(
   lines = list(gpar(col ="Blue"),
@@ -341,13 +328,9 @@ styles_PFS <- fpShapesGp(
              gpar(fill = ifelse((HR_PFS$pval/2)[10] <0.05, "blue", "red")),
              gpar(fill = ifelse((HR_PFS$pval/2)[11] <0.05, "blue", "red")),
              gpar(fill = ifelse((HR_PFS$pval/2)[12] <0.05, "blue", "red"))
-  )
-  
-)
+  ))
 
-pdf('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Extended_panel_1.pdf',
-     width = 10)
-# plot.new()
+pdf('/Users/neelamf2/Desktop/Extended_panel_1.pdf', width = 10)
 forestplot(tabletext_PFS,
            boxsize = .30, # We set the box size to better visualize the type
            line.margin = .30, # We need to add this to avoid crowding
@@ -376,3 +359,6 @@ forestplot(tabletext_PFS,
            grid = structure(c(-1), gp = gpar(lty = 1, col = "black")),
            title = 'Power of TMB of Recists response between high and low TMB group')
 dev.off()
+```
+
+
