@@ -1,7 +1,7 @@
 ---
 title: "R Notebook"
 ## title: "Implementation and Figures: panel_2 and panel_5(ex_fig_2)"
-output: html_notebook 
+output: html_notebook
 ---
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
