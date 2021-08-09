@@ -1,8 +1,6 @@
 ---
 title: "R Notebook"
-output:
-  pdf_document: default
-  html_document: default
+output: html_document: default
 ---
 <!-- Library-->
 ```{r}
