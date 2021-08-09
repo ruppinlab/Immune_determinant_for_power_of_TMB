@@ -53,7 +53,14 @@ colnames(Immune_Cell_abundance)[grep('Neutrophils',colnames(Immune_Cell_abundanc
 ```
 <!-- Joo's immune matrix -->
 ```{r}
+<<<<<<< HEAD
+immune_factor= read.csv("/Users/sinhas8/approve_tmbCriteria_vs_age_Sex/Tools/fda-tmbCriteria-Power-vs-age-sex/Data/immune_factors_response_joo.csv", row.names = 1)
+
+unlist(immune_factor[1,])[na.omit(match(c('TGCT','DLBC','CESC', 'STAD', 'READ', 'PRAD','CHOL', 'MESO', 'KICH'),
+      names(unlist(immune_factor[1,]))))]
+=======
 immune_factor= read.csv("/Users/neelamf2/Downloads/Eytan/fda-tmbCriteria-Power-vs-age-sex/Data/immune_factors_response_joo.csv", row.names = 1)
+>>>>>>> d07856cca871fa9afb25e98e01d3db3cc0e6a156
 
 f1=18/(18+31); f2=1-f1
 immune_factor$COAD= sapply(seq(1:nrow(immune_factor)), function (x) 
