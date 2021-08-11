@@ -2,9 +2,9 @@
 title: "R Notebook"
 output: html_notebook 
 ---
+
 <!-- sourcing data and function file-->
 ```{r}
-
 source_rmd <- function(x, ...) {
   library(knitr)
   options(knitr.duplicate.label = 'allow')
@@ -59,6 +59,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
 ```
 
 ```{r}
+
 allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
 OS_cox_results= do.call(rbind, lapply(allcancer_types, function(x)
   err_handle(Calculate_TMB_Response_association_with_CI(infunc_df= mskcc_combined,
@@ -96,11 +97,9 @@ Figure_1A_plot_df= na.omit(Figure_1A_plot_df)
 Figure_1A_plot_df=Figure_1A_plot_df[ order(Figure_1A_plot_df$effect_size, decreasing = F),]
 
 
-Figure_1A_plot_df= Figure_1A_plot_df[!(rownames(Figure_1A_plot_df)%in% c('SCLC',
-                                                                         "STAD",
-                                                                         'KIRC',
-                                                                         # 'PAAD',
-                                                                         "Unknown-Primary")),]
+Figure_1A_plot_df= Figure_1A_plot_df[!(rownames(Figure_1A_plot_df)%in% c('KIRC'
+                                                                         #,'PAAD'
+                                                                         )),]
 colnames(Figure_1A_plot_df)[2] = "pval"
 ### number of Samples 
 no_of_samples_os= samples_by_cancer_type[samples_by_cancer_type[,2]> 1,]
@@ -186,7 +185,7 @@ dev.off()
 # Figure 1B: Forest plot for ORR vs TMB cancer type with sample more than 50/all
 ################################################################# --->
 ```{r}
-cancertype = samples_each_cancer_type[,3][samples_each_cancer_type[,2]> 1]
+cancertype = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
 ORR_cox_results
 Figure_1B_plot_df= ORR_cox_results[rownames(ORR_cox_results) %in% cancertype,]
 Figure_1B_plot_df= Figure_1B_plot_df[!is.na(Figure_1B_plot_df$effect_size) & 
@@ -270,7 +269,6 @@ forestplot(tabletext_ORR,
            grid = structure(c(-1), gp = gpar(lty = 1, col = "black")),
            title = 'Power of TMB of Recists response between high and low TMB group')
 
-
 dev.off()
 ```
 
@@ -278,8 +276,7 @@ dev.off()
 # Extended Figure 1: Forest plot for PFS vs TMB cancer type with sample more than 50/ all
 #################################################################-->
 ```{r}
-cancertype = samples_each_cancer_type[,3][samples_each_cancer_type[,2]> 1]
-
+cancertype = samples_each_cancer_type[,1][samples_each_cancer_type[,2]> 1]
 
 Ex_figure_1_plot_df= PFS_cox_results
 Ex_figure_1_plot_df= Ex_figure_1_plot_df[rownames(Ex_figure_1_plot_df) 

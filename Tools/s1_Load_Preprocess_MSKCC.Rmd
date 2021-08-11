@@ -20,90 +20,21 @@ library(caret)
 source('/Users/neelamf2/Downloads/Eytan/myCustom_functions.R')
 # setwd('../data/')
 ```
-<!-- Load & Preprocess data -->
+
+<!--Load MSKCC combined data -->
 ```{r}
-setwd('../data/')
-# Ids of patients which are overlap between two phases of MSKCC
-mskcc_supp=data.frame(read_excel('../data/mskcc_sup.xlsx', sheet = 1))
-mskcc_supp$Drug_class[mskcc_supp$Drug_class == "PD-1/PDL-1"] = "PD-1/PD-L1"
-mskcc_sup_pd1=mskcc_supp[grep('PD',mskcc_supp$Drug_class),]
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Bladder Cancer"] = "Bladder"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Breast Cancer"] = "Breast"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Cancer of Unknown Primary"] = "Unknown primary"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Colorectal Cancer"] = "Colorectal"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Esophagogastric Cancer"] = "Esophageal"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Head and Neck Cancer"] = "Head & Neck"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Non-Small Cell Lung Cancer"] = "NSCLC"
-mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Renal Cell Carcinoma"] = "Renal"
+mskcc_combined= read.csv("../data/mskcc_combined.csv")
+mskcc_combined$Cancer_Type_acronym=factor(mskcc_combined$Cancer_Type_acronym)
 
-# table(mskcc_sup_pd1$Cancer.Type)
-overlap_id= data.frame(read_excel('../data/TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx', sheet = 2))
-# Removing overlap of samstein et al
-ROI=intersect(mskcc_sup_pd1$Sample.ID, overlap_id$IDs.overlapping.with.Samstein.dataset)
-mskcc_sup_no_overlap =mskcc_sup_pd1[!(mskcc_sup_pd1$Sample.ID %in% ROI),]
-
-## Loading mskcc_2's et al data
-Valero_ICI = data.frame(read_excel("../data/TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx", sheet = 1))
-# Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Alive"] = 0
-# Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Dead"] = 1
-Valero_ICI$Vital.status[grep("Alive", Valero_ICI$Vital.status,ignore.case = T)] = 0
-Valero_ICI$Vital.status[grep("Dead", Valero_ICI$Vital.status,ignore.case = T)] = 1
-Valero_ICI$Vital.status = as.numeric(Valero_ICI$Vital.status)
-
-colnames(Valero_ICI)[colnames(Valero_ICI) %in% c("TMB..Mutations.Mb.", 
-                                                 "Vital.status", 
-                                                 "Overall.Survival..Months.")] <- c("TMB",
-                                                                                    "Overall_survival_status",
-                                                                                    "Overall_survival_months")
-Valero_ICI= Valero_ICI[!is.na(Valero_ICI$Overall_survival_status),] ### removing Na values of survival status
-Valero_ICI_pd1= Valero_ICI[grep('PD',Valero_ICI$ICI.drug.class),]
-Valero_ICI_pd1$Progression= as.numeric(as.character(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1'))))
-Valero_ICI_pd1$Cancer.type[Valero_ICI_pd1$Cancer.type=="CNS"] = "Glioma"
-
-## for forest plot to check take the sample size
-samples_each_cancer_type=aggregate(ID ~ Cancer.type, Valero_ICI_pd1, length)
-samples_each_cancer_type$cancer_acronym= c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
-                                             'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
-                                             'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
-cancer_Types_of_Interest=samples_each_cancer_type[,3][samples_each_cancer_type[,2]>1]
-
-# Combine the above two datasets
-mskcc_combined= rbind(data.frame(ID= mskcc_sup_no_overlap$Sample.ID,
-                                 Age= mskcc_sup_no_overlap$Age_decade,
-                                 Cancer_Type= mskcc_sup_no_overlap$Cancer.Type,
-                                 Sex= mskcc_sup_no_overlap$GENDER,
-                                 TMB= mskcc_sup_no_overlap$TMB,
-                                 drug= mskcc_sup_no_overlap$Drug_class,
-                                 year_in_ici= mskcc_sup_no_overlap$Imm_yearbin,
-                                 Overall_survival_status= mskcc_sup_no_overlap$SURVIVAL_EVENT,
-                                 Overall_survival_months= mskcc_sup_no_overlap$SURVIVAL_MONTHS,
-                                 PFS_status= NA,
-                                 PFS_months= NA,
-                                 ORR= NA), 
-                      data.frame(ID= Valero_ICI_pd1$ID,
-                                 Age= Valero_ICI_pd1$Age.at.ICI.start,
-                                 Cancer_Type= Valero_ICI_pd1$Cancer.type,
-                                 Sex= Valero_ICI_pd1$Sex,
-                                 TMB= Valero_ICI_pd1$TMB,
-                                 drug= Valero_ICI_pd1$ICI.drug.class,
-                                 year_in_ici= Valero_ICI_pd1$Year.of.ICI.treatment.start,
-                                 Overall_survival_status= Valero_ICI_pd1$Overall_survival_status,
-                                 Overall_survival_months= Valero_ICI_pd1$Overall_survival_months,
-                                 PFS_status= Valero_ICI_pd1$Progression,
-                                 PFS_months= Valero_ICI_pd1$Progression.Free.Survival..Months.,
-                                 ORR= Valero_ICI_pd1$Response.to.ICI)
-                      )
-mskcc_combined$Cancer_Type_acronym=NA
-mskcc_combined$Cancer_Type=factor(mskcc_combined$Cancer_Type)
-mskcc_combined$Cancer_Type_acronym=mskcc_combined$Cancer_Type
-levels(mskcc_combined$Cancer_Type_acronym)=c('BLCA', 'BRCA','COAD', 'UCEC', 'ESCA', 'STAD',
-                                             'GBM', 'HNSC', 'LIHC', 'SKCM', 'MESO','NSCLC',
-                                             'OV', 'PAAD', 'KIRC', 'SARC', 'SCLC', 'Unknown-Primary')
-samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length)
+samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length) 
 cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
-table(mskcc_combined$Cancer_Type)
-```
 
+## removing cancer types where PFS/ ORR is NA for figure 1B and ex figure 1
+mskcc_df_ORR_PFS= mskcc_combined[!(is.na(mskcc_combined$PFS_status)),]
+samples_each_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_df_ORR_PFS, length) 
+cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
+
+```
 
 <!-- Functions needed-->
 ```{r}
@@ -117,7 +48,7 @@ Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
   if(response_measure=='ORR'){
     infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
     # Contigency matrix
-    cont_matrix=table( infunc_df_tmb$TMB>=10, infunc_df_tmb$ORR)
+    cont_matrix=table( infunc_df_tmb$TMB >=10, infunc_df_tmb$ORR)
     # Perform fisher test
     fisher_test_results_raw=fisher.test(cont_matrix)
     to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
