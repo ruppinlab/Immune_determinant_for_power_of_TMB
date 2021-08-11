@@ -23,10 +23,10 @@ $ cd ./"--PATH of your directory where file is located--"/Immune_determinant_for
 $ sh ./Run.sh
 ```
 #### The Run.sh file runs all the RMD scripts:<br />
-First, it runs the Step_0 and Step_1 respectively where we are loading required datasets and functions. <br />
+First, it runs the Step_0 and Step_1 respectively, where it loads the required datasets and functions. <br />
 Next, it run Step_3, Step_4, Step_5, for analysis, Figures and building a multivariate Model. <br />
 
-While, running .sh file, if you get this error with Pandoc occurs:
+While, running .sh file, if this error with Pandoc occurs:
 ```
 Error: pandoc version 1.12.3 or higher is required and was not found (see the help page ?rmarkdown::pandoc_available).
 ```
