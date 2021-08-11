@@ -1,6 +1,6 @@
 # Immune_determinant_for_power_of_TMB
 ## Abstract
-Determining the immnue factors which can effect the Power of TMB in immnotherapy.
+Determining the immnue factors which can effect the Power of TMB in immunotherapy.
 
 ## Requirements
 Install the software, which involves downloading the code from GitHub using the below instructions. 
@@ -50,12 +50,12 @@ export RSTUDIO_PANDOC="<--Output of above command -->"
 ```
 
 ### What are the expected output files?
+
 In Result figures:\
 All analysis figures are generated.\
 In Data section: \
 The Combined and collated data of MSKCC file is generated.\
 The TMB power output from our predictive model for nine rare cancer types is generated.\
-
 
 
 
