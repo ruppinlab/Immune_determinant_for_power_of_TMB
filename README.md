@@ -49,8 +49,9 @@ export RSTUDIO_PANDOC="<--Output of above command -->"
 
 ### What are the expected output files?
 
-In Result figures: <br />
+In Result figures:
 All analysis figures are generated.<br />
+
 In Data section: <br />
 The Combined and collated data of MSKCC file is generated.<br />
 The TMB power output from our predictive model for nine rare cancer types is generated.<br />
