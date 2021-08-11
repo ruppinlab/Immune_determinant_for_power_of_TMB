@@ -3,15 +3,16 @@
 Determining the immnue factors which can effect the Power of TMB in immnotherapy.
 
 ## Requirements
+Install the software, which involves downloading the code from GitHub using the below instructions. 
+
 ### software and platform
-RStudio
+Rstudio
+
 Install R markdown
+
 pandoc version > 1.12.3
 
-### Reproducing results in the manuscript
-
-Clone the git repository:
-It should take 5 minutes to install the software, which involves downloading the code from GitHub using the below instructions. 
+### Clone the git repository:
 
 ```
 git clone https://github.com/ruppinlab/Immune_determinant_for_power_of_TMB.git
@@ -49,8 +50,11 @@ export RSTUDIO_PANDOC="<--Output of above command -->"
 ```
 
 ### What are the expected output files?
-All analysis figures are generated in Result_figures folder
-In Data section, the TMB power output from our predictive model for nine rare cancer types is generated.
+In Result figures:\
+All analysis figures are generated.\
+In Data section: \
+The Combined and collated data of MSKCC file is generated.\
+The TMB power output from our predictive model for nine rare cancer types is generated.\
 
 
 
