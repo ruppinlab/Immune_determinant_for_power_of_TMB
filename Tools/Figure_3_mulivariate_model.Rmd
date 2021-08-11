@@ -6,6 +6,19 @@ output: html_notebook
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+<!-- sourcing data and function file-->
+```{r}
+source_rmd <- function(x, ...) {
+  library(knitr)
+  options(knitr.duplicate.label = 'allow')
+  source(purl(x, output = tempfile()), ...)
+}
+source_rmd("../Tools/s0_Build_Immune_matrix.Rmd")
+source_rmd("../Tools/s1_Load_Preprocess_MSKCC.Rmd")
+source_rmd("../Tools/Figure2_and_sup_figure_2.Rmd")
+```
+
 <!--Run RMD files (s0,s1 and Figure1) before running it-->
 <!--training and testing data preprocessing-->
 ```{r}
@@ -107,11 +120,11 @@ ggplot(data=POT_with_variable_by_ORR, aes(x=new_M1_macrophage, y=effect_size))+
 ```{r}
 modulator_matrix = as.matrix(POT_with_variable_by_OS[3:6],)
 
-jpeg('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/correlation_matrix_features.jpeg',height=450, width = 450, units = 'px',quality = 300)
+# jpeg('/Result_fgures/correlation_matrix_features.jpeg',height=450, width = 450, units = 'px',quality = 300)
 
 correlation_matrix= corrplot.mixed(cor(modulator_matrix), tl.col="black",tl.cex= 1, lower.col='black',number.cex= 1)
 
-dev.off()
+# dev.off()
 ```
 
 <!--# multivariate model-->
@@ -139,12 +152,11 @@ model_ORR <- train(effect_size ~M1_macrophage+ Resting_DC,
 
 performance_result_ORR= cor.test(model_ORR$pred$pred,model_ORR$pred$obs, method = 's')[4]
 
-sum(performance_result$estimate, performance_result1$estimate, performance_result2$estimate)/3
+sum(performance_result_OS$estimate, performance_result_PFS$estimate, performance_result_ORR$estimate)/3
 
 ```
 <!--Testing-->
 ```{r}
-predict(model_OS, test_df_joo[,c(1,3)])
 
 # testing_features in range
 test_df_2_interpolation = test_df_2[((test_df_2$M1_macrophage > 0.019 & test_df_2$M1_macrophage < 0.085) & (test_df_2$Resting_DC < 0.03)),]
@@ -153,8 +165,7 @@ test_df_2_extrapolation = test_df_2[!(rownames(test_df_2) %in% rownames(test_df_
 
 predicted_values= data.frame(predicted_OS_Power_of_TMB= sort(predict(model_OS, test_df_2_interpolation), decreasing = T))
 
-write.csv(predicted_values,
- file = '/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/data/Model_prediction_orr.csv')
+write.csv(predicted_values, file = '../data/Model_prediction_OS.csv')
 
 ```
 
@@ -173,7 +184,8 @@ panel_3_A= ggplot(dfplot, aes(x=pred, y= obs))+
   stat_cor(label.y =c(3,2.75), label.x = c(0,0) , method = 's', cor.coef.name = 'rho', size=5)+
   geom_label_repel(aes(label=cancertype))
 
-ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/model_pred_obs_POT_spearman.pdf', panel_3_A, height=5, width = 10, units = 'in', dpi = 500)
+ggsave('../Result_fgures/model_pred_obs_POT_spearman.pdf', 
+       panel_3_A, height=5, width = 6, units = 'in', dpi = 500)
 
 ```
 <!-- Panel_3: lollipop plot for predicted TMB Power-->
@@ -190,7 +202,8 @@ panel_3_B= ggplot(predicted_values, aes(x = reorder(rownames(predicted_values), 
   xlab("Cancer Types")+
   ylab("Predicted Power of TMB (Using OS)")
 
-ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/lollipop_plot_predicted_POT_values.pdf', panel_3_B, height=5, width = 6, units = 'in', dpi = 500)
+ggsave('../Result_fgures/lollipop_plot_predicted_POT_values.pdf', 
+       panel_3_B, height=5, width = 6, units = 'in', dpi = 500)
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.

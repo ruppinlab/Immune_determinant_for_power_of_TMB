@@ -2,9 +2,16 @@
 title: "R Notebook"
 output: html_notebook 
 ---
-<!-- Library-->
+<!-- sourcing data and function file-->
 ```{r}
-library(forestplot)
+
+source_rmd <- function(x, ...) {
+  library(knitr)
+  options(knitr.duplicate.label = 'allow')
+  source(purl(x, output = tempfile()), ...)
+}
+source_rmd("../Tools/s0_Build_Immune_matrix.Rmd")
+source_rmd("../Tools/s1_Load_Preprocess_MSKCC.Rmd")
 ```
 
 <!-- Run s0 and s1 to load and preprocess the data and functions required-->
@@ -142,8 +149,8 @@ styles_OS <- fpShapesGp(
              gpar(fill = ifelse((HR_OS$pval/2)[13] <0.05, "blue", "red"))
              )
 )
-pdf('/Users/neelamf2/Desktop/panel_1_A.pdf', width = 10)
-
+pdf('../Result_fgures/panel_1_A.pdf', width = 10)
+  
 forestplot(tabletext_OS,
            boxsize = .30, # We set the box size to better visualize the type
            line.margin = .30, # We need to add this to avoid crowding
@@ -232,7 +239,7 @@ styles <- fpShapesGp(
              # ,gpar(fill = ifelse((HR_ORR$pval/2)[11] <0.05, "blue", "red"))
              )
 )
-pdf('/Users/neelamf2/Desktop/panel_1_B.pdf',
+pdf('../Result_fgures/panel_1_B.pdf',
      width = 10)
 
 forestplot(tabletext_ORR,
@@ -330,7 +337,7 @@ styles_PFS <- fpShapesGp(
              gpar(fill = ifelse((HR_PFS$pval/2)[12] <0.05, "blue", "red"))
   ))
 
-pdf('/Users/neelamf2/Desktop/Extended_panel_1.pdf', width = 10)
+pdf('../Result_fgures/Extended_panel_1.pdf', width = 10)
 forestplot(tabletext_PFS,
            boxsize = .30, # We set the box size to better visualize the type
            line.margin = .30, # We need to add this to avoid crowding

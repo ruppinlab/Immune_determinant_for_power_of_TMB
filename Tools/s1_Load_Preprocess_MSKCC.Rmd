@@ -6,6 +6,7 @@ output: html_notebook
 <!-- Libraries -->
 ```{r}
 require(ggrepel)
+library(forestplot)
 library(corrplot)
 require("survival")
 require(statar)
@@ -17,13 +18,13 @@ require("survival")
 require("survminer")
 library(caret)
 source('/Users/neelamf2/Downloads/Eytan/myCustom_functions.R')
-setwd('/Users/neelamf2/Downloads/Eytan/fda-tmbCriteria-Power-vs-age-sex/Data/')
+# setwd('../data/')
 ```
 <!-- Load & Preprocess data -->
 ```{r}
-setwd('/Users/neelamf2/Downloads/Eytan/fda-tmbCriteria-Power-vs-age-sex/Data/')
+setwd('../data/')
 # Ids of patients which are overlap between two phases of MSKCC
-mskcc_supp=data.frame(read_excel('mskcc_sup.xlsx', sheet = 1))
+mskcc_supp=data.frame(read_excel('../data/mskcc_sup.xlsx', sheet = 1))
 mskcc_supp$Drug_class[mskcc_supp$Drug_class == "PD-1/PDL-1"] = "PD-1/PD-L1"
 mskcc_sup_pd1=mskcc_supp[grep('PD',mskcc_supp$Drug_class),]
 mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Bladder Cancer"] = "Bladder"
@@ -36,13 +37,13 @@ mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Non-Small Cell Lung Cance
 mskcc_sup_pd1$Cancer.Type[mskcc_sup_pd1$Cancer.Type =="Renal Cell Carcinoma"] = "Renal"
 
 # table(mskcc_sup_pd1$Cancer.Type)
-overlap_id= data.frame(read_excel('TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx', sheet = 2))
+overlap_id= data.frame(read_excel('../data/TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx', sheet = 2))
 # Removing overlap of samstein et al
 ROI=intersect(mskcc_sup_pd1$Sample.ID, overlap_id$IDs.overlapping.with.Samstein.dataset)
 mskcc_sup_no_overlap =mskcc_sup_pd1[!(mskcc_sup_pd1$Sample.ID %in% ROI),]
 
 ## Loading mskcc_2's et al data
-Valero_ICI = data.frame(read_excel("TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx", sheet = 1))
+Valero_ICI = data.frame(read_excel("../data/TMB_and_outcomes_in_patients_treated_with_ICI_valero.xlsx", sheet = 1))
 # Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Alive"] = 0
 # Valero_ICI$Vital.status[Valero_ICI$Vital.status== "Dead"] = 1
 Valero_ICI$Vital.status[grep("Alive", Valero_ICI$Vital.status,ignore.case = T)] = 0
@@ -56,7 +57,7 @@ colnames(Valero_ICI)[colnames(Valero_ICI) %in% c("TMB..Mutations.Mb.",
                                                                                     "Overall_survival_months")
 Valero_ICI= Valero_ICI[!is.na(Valero_ICI$Overall_survival_status),] ### removing Na values of survival status
 Valero_ICI_pd1= Valero_ICI[grep('PD',Valero_ICI$ICI.drug.class),]
-Valero_ICI_pd1$Progression= factor2numeric(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1')))
+Valero_ICI_pd1$Progression= as.numeric(as.character(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1'))))
 Valero_ICI_pd1$Cancer.type[Valero_ICI_pd1$Cancer.type=="CNS"] = "Glioma"
 
 ## for forest plot to check take the sample size
@@ -72,7 +73,7 @@ mskcc_combined= rbind(data.frame(ID= mskcc_sup_no_overlap$Sample.ID,
                                  Cancer_Type= mskcc_sup_no_overlap$Cancer.Type,
                                  Sex= mskcc_sup_no_overlap$GENDER,
                                  TMB= mskcc_sup_no_overlap$TMB,
-                                 drug= mskcc_sup_no_overlap$Drug_class,## removed MSI information
+                                 drug= mskcc_sup_no_overlap$Drug_class,
                                  year_in_ici= mskcc_sup_no_overlap$Imm_yearbin,
                                  Overall_survival_status= mskcc_sup_no_overlap$SURVIVAL_EVENT,
                                  Overall_survival_months= mskcc_sup_no_overlap$SURVIVAL_MONTHS,
@@ -88,7 +89,7 @@ mskcc_combined= rbind(data.frame(ID= mskcc_sup_no_overlap$Sample.ID,
                                  year_in_ici= Valero_ICI_pd1$Year.of.ICI.treatment.start,
                                  Overall_survival_status= Valero_ICI_pd1$Overall_survival_status,
                                  Overall_survival_months= Valero_ICI_pd1$Overall_survival_months,
-                                 PFS_status= factor2numeric(factor(Valero_ICI_pd1$Progression, labels =  c('0', '1'))),
+                                 PFS_status= Valero_ICI_pd1$Progression,
                                  PFS_months= Valero_ICI_pd1$Progression.Free.Survival..Months.,
                                  ORR= Valero_ICI_pd1$Response.to.ICI)
                       )
@@ -184,7 +185,7 @@ create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
             plot.title = element_text(color="red", size=14, face="bold.italic"))+
       labs(x='Immune Factors', y=paste('Spearman correlation with Power of TMB \n(using ',response_type,')',sep='' ))+
       ggtitle(infunc_title)
-  ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/tmb-responseVSTME_factors',
+  ggsave(paste('../Result_fgures/tmb-responseVSTME_factors',
                consider_cancer_type,'_',
                response_type,'.pdf', sep ='' ),
          Panel2, height=7, width = 6, units = 'in', dpi = 500)
@@ -213,7 +214,7 @@ create_scatter_plot<- function(infunc_cancer_types=allcancer_types,
     stat_cor(label.y = 0, label.x = 5, method = 'p', cor.coef.name = 'rho', size=5)+
     geom_label_repel(aes(label=rownames(df2plot), size=0.5), show.legend = F)+
     coord_flip()
-  ggsave(paste('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/tmb-responseVS',
+  ggsave(paste('../Result_fgures/tmb-responseVS',
                immune_feature_of_interest,
                consider_cancer_type,'_',
                response_type,'.pdf', sep ='' ),
