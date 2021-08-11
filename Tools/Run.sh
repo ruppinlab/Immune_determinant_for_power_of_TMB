@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export RSTUDIO_PANDOC=/Applications/RStudio.app/Contents/MacOS/pandoc
-
 Rscript -e "rmarkdown::render('s0_Build_Immune_matrix.Rmd')"
 Rscript -e "rmarkdown::render('s1_Load_Preprocess_MSKCC.Rmd')"
 Rscript -e "rmarkdown::render('Figure_1_forest_plot_ICI_response.Rmd')"
