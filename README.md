@@ -52,19 +52,18 @@ export RSTUDIO_PANDOC="<--Output of above command -->"
 In Result figures:
 All analysis figures are generated in PDF.<br />
 
-panel_1_A.pdf, panel_1_B.pdF, Extended_panel_1.PDF = Represents the Association TMB High and TMB low with three ICI response (Overall Survival(OS), Progression Free Survival(PFS) and Objective response rate(ORR)). Panel 1 and ex_figure 1 in Manuscript (MS) <br />
+* panel_1_A.pdf, panel_1_B.pdF, Extended_panel_1.PDF = Represents the Association TMB High and TMB low with three ICI response (Overall Survival(OS), Progression Free Survival(PFS) and Objective response rate(ORR)). Panel 1 and ex_figure 1 in Manuscript (MS) <br />
 
-tmb-response VS TME_factorsall_cancerTypes_OS.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_OS.pdf = Represent the spearman correlation between <b>TMB power </b> and <b>Immune factor</b>, when ICI response is OS. In MS figure 2A and ex_figure_2C represent it. <br />
+* figure 2A and ex_figure_2C = tmb-response VS TME_factorsall_cancerTypes_OS.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_OS.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is OS. </b><br />
 
-tmb-response VS TME_factorsall_cancerTypes_ORR.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_ORR.pdf = Represent the spearman correlation between <b>TMB power </b> and <b>Immune factor</b>, when ICI response is OS. In MS figure 2B and ex_figure_2D represent it,<br />
+* figure 2B and ex_figure_2D= tmb-response VS TME_factorsall_cancerTypes_ORR.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_ORR.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is OS.</b> <br />
 
-tmb-response VS TME_factorsall_cancerTypes_PFS.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_PFS.pdf = Represent the spearman correlation between <b>TMB power </b> and <b>Immune factor</b>, when ICI response is PFS. In MS ex_figure_2(A and B) represent it,<br />
+* Ex_figure_2(A and B) = tmb-response VS TME_factorsall_cancerTypes_PFS.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_PFS.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is PFS,</b> <br />
 
-model_pred_obs_POT_spearman and lollipop_plot_predicted_POT_values = Represents the Panel 3 of MS. <Br />
+* Panel 3 = model_pred_obs_POT_spearman and lollipop_plot_predicted_POT_values <Br />
 
 In Data section: <br />
-The Combined and collated data of MSKCC file is generated.<br />
-The TMB power output from our predictive model for nine rare cancer types is generated.<br />
+* The TMB power output from our predictive model for nine rare cancer types is generated.<br />
 
 
 
