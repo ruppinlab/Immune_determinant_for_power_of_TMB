@@ -17,7 +17,7 @@ library(tidyr)
 require("survival")
 require("survminer")
 library(caret)
-source('/Users/neelamf2/Downloads/Eytan/myCustom_functions.R')
+#source('/Users/neelamf2/Downloads/Eytan/myCustom_functions.R')
 # setwd('../data/')
 ```
 
