@@ -5,7 +5,9 @@ Determining the immnue factors which can effect the Power of TMB in immnotherapy
 ## Requirements
 ### software and platform
 RStudio
+
 Install R markdown
+
 pandoc version > 1.12.3
 
 ### Reproducing results in the manuscript
@@ -50,6 +52,7 @@ export RSTUDIO_PANDOC="<--Output of above command -->"
 
 ### What are the expected output files?
 All analysis figures are generated in Result_figures folder
+
 In Data section, the TMB power output from our predictive model for nine rare cancer types is generated.
 
 
