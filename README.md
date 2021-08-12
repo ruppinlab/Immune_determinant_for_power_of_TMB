@@ -60,7 +60,7 @@ All analysis figures are generated in PDF.<br />
 
 * Figure 2A and Ex_figure_2C = tmb-response VS TME_factorsall_cancerTypes_OS.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_OS.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is OS. </b><br />
 
-* Figure 2B and Ex_figure_2D= tmb-response VS TME_factorsall_cancerTypes_ORR.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_ORR.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is OS.</b> <br />
+* Figure 2B and Ex_figure_2D= tmb-response VS TME_factorsall_cancerTypes_ORR.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_ORR.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is ORR.</b> <br />
 
 * Ex_figure_2(A and B) = tmb-response VS TME_factorsall_cancerTypes_PFS.pdf and tmb-responseVSTME_factorsOnly_Sig_Tmb.Resp_associated_cancerTypes_PFS.pdf represent the spearman correlation between <b>TMB power </b> and <b>Immune factor, when ICI response is PFS,</b> <br />
 
