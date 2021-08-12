@@ -17,7 +17,6 @@ library(tidyr)
 require("survival")
 require("survminer")
 library(caret)
-#source('/Users/neelamf2/Downloads/Eytan/myCustom_functions.R')
 # setwd('../data/')
 ```
 
@@ -35,6 +34,12 @@ samples_each_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_df_ORR_PFS, 
 cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
 
 ```
+<!-- funtion Error handle -->
+```{r}
+err_handle<-function(x)
+  { tryCatch(x, error=function(e){NA}) }
+```
+
 
 <!-- Functions needed-->
 ```{r}
