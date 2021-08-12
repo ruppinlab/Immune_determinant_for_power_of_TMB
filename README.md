@@ -69,7 +69,7 @@ All analysis figures are generated in PDF.<br />
 * Panel 3 = model_pred_obs_POT_spearman and lollipop_plot_predicted_POT_values <Br />
 
 In Data section: <br />
-* The TMB power output from our predictive model for nine rare cancer types is generated.<br />
+* Model_prediction_OS = The TMB power output from our predictive model for nine rare cancer types is generated.<br />
 
 
 
