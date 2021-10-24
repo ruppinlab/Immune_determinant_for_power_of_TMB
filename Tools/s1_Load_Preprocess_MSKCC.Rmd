@@ -23,8 +23,13 @@ library(caret)
 <!--Load MSKCC combined data -->
 ```{r}
 mskcc_combined= read.csv("../data/mskcc_combined.csv")
-mskcc_combined$Cancer_Type_acronym=factor(mskcc_combined$Cancer_Type_acronym)
+# ########################################
+# ## Repeat Analysis excluding PAAD #################
+# mskcc_combined= mskcc_combined[!mskcc_combined$Cancer_Type_acronym == "PAAD",]
+# ########################################
 
+mskcc_combined$Cancer_Type_acronym=factor(mskcc_combined$Cancer_Type_acronym)
+table(mskcc_combined$Cancer_Type_acronym)
 samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length) 
 cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
 
@@ -32,44 +37,90 @@ cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]>
 mskcc_df_ORR_PFS= mskcc_combined[!(is.na(mskcc_combined$PFS_status)),]
 samples_each_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_df_ORR_PFS, length) 
 cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
-
 ```
 <!-- funtion Error handle -->
 ```{r}
 err_handle<-function(x)
   { tryCatch(x, error=function(e){NA}) }
 ```
+<!--Analysis 4-->
+<!--finding equal number of sample when TMB >= 10 mut/MB, using percentile-->
+```{r}
 
+
+ratio_TMB_H_vs_L= nrow(mskcc_combined[mskcc_combined$TMB > 10,])/length(mskcc_combined$TMB)
+
+TMB_level_by_cancer_type=table(mskcc_combined$Cancer_Type,(mskcc_combined$TMB >= 10))
+colnames(TMB_level_by_cancer_type) = c("less_than_10", "greater_than_10")
+ratio_T_F= data.frame(greater_than_10= TMB_level_by_cancer_type[,"greater_than_10"], 
+                      less_than_10= TMB_level_by_cancer_type[,"less_than_10"],
+                      ratio= TMB_level_by_cancer_type[,"greater_than_10"] / 
+                        (TMB_level_by_cancer_type[,"greater_than_10"]+TMB_level_by_cancer_type[,"less_than_10"])
+                      )
+sum(ratio_T_F$greater_than_10)
+
+
+
+### Sanity check####
+check_sample_equal_in_thresholds<-function(infunc_df= mskcc_combined,
+                                           COI="NSCLC",
+                                           th= ratio_TMB_H_vs_L){
+  infunc_df_tmb= infunc_df[infunc_df$Cancer_Type_acronym == COI,]
+  
+  threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(.266))]
+  TMB_level_by_cancer_type = table(infunc_df_tmb$Cancer_Type, infunc_df_tmb$TMB >= threshold)
+  c(less_than_threshold= TMB_level_by_cancer_type[,1],
+    greater_than_threshold= TMB_level_by_cancer_type[,2], 
+    threshold=threshold)
+}
+
+allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
+samples_equal_in_threshold_each_cancer_type = do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(check_sample_equal_in_thresholds(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                th= ratio_TMB_H_vs_L)) ))
+
+rownames(samples_equal_in_threshold_each_cancer_type)=allcancer_types
+sum(samples_equal_in_threshold_each_cancer_type[,'greater_than_threshold'])
+```
 
 <!-- Functions needed-->
+<!--Update: use of argument "th" in function for the making the percentile based TMB threshold instead of 10 mut/MB -->
 ```{r}
 # Calculates TMB and Response assocaition
 Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
                                              COI="NSCLC",
-                                             response_measure='ORR'){
+                                             response_measure='ORR',
+                                             th= ratio_TMB_H_vs_L*100){
   infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type_acronym == COI)),]
   #infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
   
   if(response_measure=='ORR'){
     infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+    threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
+    
     # Contigency matrix
-    cont_matrix=table( infunc_df_tmb$TMB >=10, infunc_df_tmb$ORR)
+    cont_matrix=table(infunc_df_tmb$TMB >= threshold, infunc_df_tmb$ORR)
     # Perform fisher test
     fisher_test_results_raw=fisher.test(cont_matrix)
     to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
                 P=fisher_test_results_raw$p.value)
   } else if(response_measure =='OS') {
     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
+    threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
+    
     # Perform coxph test
     coxph_model <- coxph(Surv(time = Overall_survival_months,
-                              event = Overall_survival_status) ~ (TMB >= 10) ,
+                              event = Overall_survival_status) ~ (TMB >= threshold) ,
                          data = infunc_df_tmb)
     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
                 P=summary(coxph_model)$coefficients[1,c(5)])
   }  else if(response_measure=='PFS') {
     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
+    threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
+    
     coxph_model <- coxph(Surv(time = PFS_months,
-                              event = PFS_status) ~ (TMB>=10) ,
+                              event = PFS_status) ~ (TMB >= threshold) ,
                          data = infunc_df_tmb)
     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
                 P=summary(coxph_model)$coefficients[1,c(5)])
@@ -164,4 +215,5 @@ Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by press
 When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
 The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
 
