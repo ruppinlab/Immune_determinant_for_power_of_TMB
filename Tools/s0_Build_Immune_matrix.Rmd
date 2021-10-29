@@ -48,8 +48,8 @@ immune_cells_by_cancerType=immune_cells_by_cancerType[,!(colnames(immune_cells_b
 # Immune_matrix_TCGA= t(immune_cells_by_cancerType)
 
 ```
-
-<!-- Selection of Pan-Immune features from TCGA based on Stage 4 samples-->
+<!--Analysis reviewer 1 :R1-->
+<!-- Selection of Pan-Immune features from TCGA based on primary tumor and Stage 4 samples-->
 ```{r}
 tcga_pan_immune_demo= read.csv('../data/Survival_SupplementalTable_S1_20171025_xena_sp.txt', sep = '\t', row.names = 1)
 
@@ -71,15 +71,15 @@ rownames(pan_immune_factor_with_demo)= pan_immune_factor_with_demo$TCGA.Particip
 pan_immune_factor_with_demo= pan_immune_factor_with_demo[,-c(1)]
 
 ####Samples for selected cancer type#####
-
+####Cancer of interest is taken from the file s1_load_preprocess_mskcc, would suggest to run it first#####
 pan_immune_factor_with_cancerOI = pan_immune_factor_with_demo[pan_immune_factor_with_demo$TCGA.Study %in% cancerTypes_of_Interest,]
 
 ####Samples for stage 4 cancer type#####
 pan_immune_factor_with_stage = pan_immune_factor_with_cancerOI[pan_immune_factor_with_cancerOI$Tumor_stage == "Stage IV",]
 
 ```
-
-<!-- Box plot Pan-Immune features from TCGA: Facet-->
+<!--Analysis reviewer 2: R2-->
+<!-- Box plot Pan-Immune features (Top Modulator) from TCGA: Facet-->
 ```{r}
 long_pan_immune_df= pan_immune_factor_with_cancerOI %>% gather(immune_factors, RNA_exp, 2:61)
 
@@ -122,12 +122,16 @@ colnames(Immune_Cell_abundance)[grep('Neutrophils',colnames(Immune_Cell_abundanc
 ```{r}
 immune_factor= read.csv("../data/immune_factors_response_joo.csv", row.names = 1)
 
+## the space after values create the "Â" symbol which make the columns as character
+# lapply(immune_factor,class)
+immune_factor[]= sapply(immune_factor, function(x) as.numeric(gsub("Â","",x)))
+
 # unlist(immune_factor[1,])[na.omit(match(c('TGCT','DLBC','CESC', 'STAD', 'READ', 'PRAD','CHOL', 'MESO', 'KICH'),
 #       names(unlist(immune_factor[1,]))))]
 
 f1=18/(18+31); f2=1-f1
 immune_factor$COAD= sapply(seq(1:nrow(immune_factor)), function (x) 
-  (immune_factor[x,'COAD_MSI']* f1 + immune_factor[x,'COAD_MSS']* f2))
+  (as.numeric(immune_factor[x,'COAD_MSI'])* f1 + as.numeric(immune_factor[x,'COAD_MSS'])* f2))
 immune_factor$NSCLC= sapply(seq(1:nrow(immune_factor)), function (x) 
   (immune_factor[x,'LUAD']* 0.5 + immune_factor[x,'LUAD']* 0.5))
 immune_factor= data.frame(t(immune_factor))

@@ -6,7 +6,7 @@ output: html_notebook
 <!-- Libraries -->
 ```{r}
 require(ggrepel)
-library(forestplot)
+# library(forestplot)
 library(corrplot)
 require("survival")
 require(statar)
@@ -23,8 +23,9 @@ library(caret)
 <!--Load MSKCC combined data -->
 ```{r}
 mskcc_combined= read.csv("../data/mskcc_combined.csv")
+
 # ########################################
-# ## Repeat Analysis excluding PAAD #################
+### Analysis: reviewer 2: R3 - Repeat Analysis excluding PAAD #################
 # mskcc_combined= mskcc_combined[!mskcc_combined$Cancer_Type_acronym == "PAAD",]
 # ########################################
 
@@ -43,8 +44,7 @@ cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]>
 err_handle<-function(x)
   { tryCatch(x, error=function(e){NA}) }
 ```
-<!--Analysis 4-->
-<!--finding equal number of sample when TMB >= 10 mut/MB, using percentile-->
+<!--Analysis: reviewer 3- R5, finding equal number of sample when TMB >= 10 mut/MB, using percentile-->
 ```{r}
 
 
@@ -85,9 +85,51 @@ sum(samples_equal_in_threshold_each_cancer_type[,'greater_than_threshold'])
 ```
 
 <!-- Functions needed-->
+<!--Update: in original analysis we did not use the argument th, please uncomment the former function (code) and comment the latter function (code) when you perform the analysis based on TMB high >= 10 mut/MB -->
+
+<!--Analysis: Reviewer 3 - R4, repeat the analysis at different percentile (10, 20 percentile)-->
 <!--Update: use of argument "th" in function for the making the percentile based TMB threshold instead of 10 mut/MB -->
+
 ```{r}
-# Calculates TMB and Response assocaition
+##### Calculates TMB and Response assocaition
+
+# Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
+#                                              COI="NSCLC",
+#                                              response_measure='ORR'){
+#   infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type_acronym == COI)),]
+#   #infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
+#   
+#   if(response_measure=='ORR'){
+#     infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+#     
+#     # Contigency matrix
+#     cont_matrix=table(infunc_df_tmb$TMB >= 10, infunc_df_tmb$ORR)
+#     # Perform fisher test
+#     fisher_test_results_raw=fisher.test(cont_matrix)
+#     to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
+#                 P=fisher_test_results_raw$p.value)
+#   } else if(response_measure =='OS') {
+#     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
+#     
+#     # Perform coxph test
+#     coxph_model <- coxph(Surv(time = Overall_survival_months,
+#                               event = Overall_survival_status) ~ (TMB >= 10) ,
+#                          data = infunc_df_tmb)
+#     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+#                 P=summary(coxph_model)$coefficients[1,c(5)])
+#   }  else if(response_measure=='PFS') {
+#     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
+#     
+#     coxph_model <- coxph(Surv(time = PFS_months,
+#                               event = PFS_status) ~ (TMB >= 10) ,
+#                          data = infunc_df_tmb)
+#     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+#                 P=summary(coxph_model)$coefficients[1,c(5)])
+#   }
+#   names(to_return)=c('effect_size', 'P')
+#   to_return
+# }
+
 Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
                                              COI="NSCLC",
                                              response_measure='ORR',

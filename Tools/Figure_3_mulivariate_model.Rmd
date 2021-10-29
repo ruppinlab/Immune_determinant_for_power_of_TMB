@@ -75,7 +75,8 @@ test_df_2= test_df_2[!(rownames(test_df_2) %in% c('LUAD','LUSC')),]
 colnames(test_df_2)=c("M1_macrophage",'Resting_DC') 
 
 ```
-<!--Run the Analysis 2 using 10 percentile-->
+
+<!--Run the Analysis, reviewer 3- R4, using 10 percentile-->
 <!--training and testing data preprocessing-->
 ```{r}
 ### DF: Power of TMB with variable, measure by OS
@@ -135,7 +136,7 @@ colnames(test_df_2)=c("M1_macrophage",'ITH', 'neutrophils')
 
 ```
 
-<!--Run the Analysis 3 using 20 percentile-->
+<!--Run the Analysis, reviewer 3- R4, using 20 percentile-->
 <!--training and testing data preprocessing-->
 ```{r}
 ### DF: Power of TMB with variable, measure by OS
@@ -217,7 +218,7 @@ colnames(test_df_2)=c("CD4_helper_T_cells",
 
 ```
 
-<!--Run the Analysis 4 using same number of sample, which we get using th >= 10 mut/MB-->
+<!--Run the Analysis, reviewer 3- R5, using same number of sample, which we get using th >= 10 mut/MB-->
 <!--training and testing data preprocessing-->
 ```{r}
 ### DF: Power of TMB with variable, measure by OS
@@ -337,13 +338,13 @@ ggplot(data=POT_with_variable_by_OS, aes(x= `CD8 T cells`, y=new_CD8_t_cell))+
 
 <!-- Correlation Matrix plot-->
 ```{r}
-modulator_matrix = as.matrix(POT_with_variable_by_OS[3:7],)
-
-# jpeg('/Result_fgures/correlation_matrix_features.jpeg',height=450, width = 450, units = 'px',quality = 300)
-
-correlation_matrix= corrplot.mixed(cor(modulator_matrix), tl.col="black",tl.cex= 1, lower.col='black',number.cex= 1)
-
-# dev.off()
+# modulator_matrix = as.matrix(POT_with_variable_by_OS[3:7],)
+# 
+# # jpeg('/Result_fgures/correlation_matrix_features.jpeg',height=450, width = 450, units = 'px',quality = 300)
+# 
+# correlation_matrix= corrplot.mixed(cor(modulator_matrix), tl.col="black",tl.cex= 1, lower.col='black',number.cex= 1)
+# 
+# # dev.off()
 ```
 
 <!--#run all combination of multivariate linear regression model (using three measures)-->
@@ -393,14 +394,17 @@ performance_df$mean_performance= rowMeans(performance_df[2:4])
 # performance_df_without_rank$R2_OS = unlist(lapply(model_results, function(x) x$results$Rsquared))
 # performance_df_without_rank$R2_ORR =unlist(lapply(model_results_ORR, function(x) x$results$Rsquared))
 # performance_df_without_rank$R2_PFS = unlist(lapply(model_results_PFS, function(x) x$results$Rsquared))
-# 
-write.csv(performance_df,
-          file = '../data/Performance_of_multivariate_model(same_no_sample).csv')
+
+
+### save the multivariate model performance
+# write.csv(performance_df,
+#           file = '../data/Performance_of_multivariate_model(same_no_sample).csv')
 
 ```
 
 
 <!--# multivariate model-->
+<!--Update: Change the Model variable according to the best performance model from above code-->
 ```{r}
 # Train the model
 train.control <- trainControl(method = "LOOCV")
@@ -438,6 +442,7 @@ sum(performance_result_OS$estimate, performance_result_PFS$estimate, performance
 
 ```
 <!--Testing-->
+<!--Update: Change the range of the immune factor for interpolation and extrapolation data points-->
 ```{r}
 
 # testing_features in range

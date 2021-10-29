@@ -16,6 +16,7 @@ source_rmd("../Tools/s1_Load_Preprocess_MSKCC.Rmd")
 
 <!-- Run s0 and s1 to load and preprocess the data and functions required-->
 <!-- Function required for figure1-->
+<!--Analysis reviewer 3 - R4 and R5-->
 <!--Update: use of argument "th" in function for the making the percentile based TMB threshold instead of 10 mut/MB -->
 ```{r}
 Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
@@ -30,7 +31,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
     infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
     threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
     # Contigency matrix
-    cont_matrix=table( infunc_df_tmb$TMB >= 10, infunc_df_tmb$ORR)
+    cont_matrix=table( infunc_df_tmb$TMB >= 10, infunc_df_tmb$ORR) ## use threshold instead of 10 
     # Perform fisher test
     fisher_test_results_raw=fisher.test(cont_matrix)
     to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
@@ -43,7 +44,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
     
     # Perform coxph test
     coxph_model <- coxph(Surv(time = Overall_survival_months,
-                              event = Overall_survival_status) ~ (TMB >= 10) ,
+                              event = Overall_survival_status) ~ (TMB >= 10) , ## use threshold instead of 10 
                          data = infunc_df_tmb)
     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
                 P=summary(coxph_model)$coefficients[1,c(5)],
@@ -54,7 +55,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
     threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
     
     coxph_model <- coxph(Surv(time = PFS_months,
-                              event = PFS_status) ~ (TMB>=10) ,
+                              event = PFS_status) ~ (TMB>=10) ,  ## use threshold instead of 10 
                          data = infunc_df_tmb)
     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
                 P=summary(coxph_model)$coefficients[1,c(5)],
@@ -99,6 +100,8 @@ ORR_cox_results= do.call(rbind, lapply(allcancer_types, function(x)
 ORR_cox_results<- data.frame(ORR_cox_results)
 rownames(ORR_cox_results)=allcancer_types
 ```
+
+<!--Analysis reviewer 2 : adding the sample size which have high TMB-->
 ```{r}
 TMB_level_by_cancer_type=table(mskcc_combined$Cancer_Type_acronym,(mskcc_combined$TMB >10))
 colnames(TMB_level_by_cancer_type) = c("less_than_10", "greater_than_10")
@@ -117,6 +120,7 @@ ratio_T_F= data.frame(greater_than_10= TMB_level_by_cancer_type[,"greater_than_1
 # ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Proportion_TMB_greater_10.pdf', proportion_TMB, height=5, width = 6, units = 'in', dpi = 500)
 ```
 
+<!--Analysis reviewer 2 : R2, remove PAAD-->
 <!--#################################################################
 # Figure 1A: Forest plot for OS vs TMB >= 10 all cancer type
 ################################################################# --->
