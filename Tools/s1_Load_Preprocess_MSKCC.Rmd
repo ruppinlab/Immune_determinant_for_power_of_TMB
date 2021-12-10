@@ -3,7 +3,7 @@ title: "R Notebook"
 ## title: "Data preprocessing and function"
 output: html_notebook
 ---
-<!-- Libraries -->
+<!-- Libraries and sourcing the files required-->
 ```{r}
 # install.packages("https://cran.r-project.org/src/contrib/Archive/rlang/rlang_0.4.10.tar.gz", repos = NULL, type="source")
 # remove.packages('xfun')
@@ -32,7 +32,7 @@ mskcc_combined= read.csv("../data/mskcc_combined_updated.csv")
 ### Analysis: reviewer 2: R3 - Repeat Analysis excluding PAAD #################
 # mskcc_combined= mskcc_combined[!mskcc_combined$Cancer_Type_acronym == "PAAD",]
 # ########################################
-
+table(mskcc_combined$Sex)
 mskcc_combined$Cancer_Type_acronym=factor(mskcc_combined$Cancer_Type_acronym)
 samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length)
 cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
@@ -88,24 +88,6 @@ sum(samples_equal_in_threshold_each_cancer_type[,'greater_than_threshold'])
 table(mskcc_combined$stage)
 
 ```
-
-<!--Revised Figure 2 (Manuscript)-->
-<!--Analysis: reviewer 2, comment 2- Checking the sex association with tmb power-->
-<!--Analysis: reviewer 2- comment 9(ii) Removing the ORR from the Immune factor dataframe-->
-```{r}
-M_F_Ratio= table(mskcc_combined$Cancer_Type_acronym, mskcc_combined$Sex)
-M_F_Ratio_df= data.frame(male= M_F_Ratio[,"Male"],
-                         female= M_F_Ratio[,"Female"],
-                         ratio= M_F_Ratio[,"Male"]/M_F_Ratio[,"Female"])
-
-
-####################################
-#Add Sex ratio (male to female) in joo's immune factor dataframe for the Analysis R7-->
-####################################
-immune_factor[na.omit(match(rownames(M_F_Ratio_df),rownames(immune_factor))),"sex"] = M_F_Ratio_df$ratio
-immune_factor = immune_factor[,!(colnames(immune_factor) %in% c("ORR"))]
-```
-
 
 <!-- Functions needed-->
 <!--Update: in original analysis we did not use the argument th, please uncomment the former function (code) and comment the latter function (code) when you perform the analysis based on TMB high >= 10 mut/MB -->
