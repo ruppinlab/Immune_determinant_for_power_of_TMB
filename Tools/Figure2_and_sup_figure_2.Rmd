@@ -17,7 +17,6 @@ source_rmd <-function(x, ...) {
 }
 source_rmd("../Tools/s0_Build_Immune_matrix.Rmd")
 source_rmd("../Tools/s1_Load_Preprocess_MSKCC.Rmd")
-<<<<<<< HEAD
 
 #################
 #custom function
@@ -27,8 +26,6 @@ stripall2match<-function(x){
   tolower(gsub('[^A-z0-9]','',x) )
 }
 #################
-=======
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 ```
 
 <!-- Run s0 and s1 to load and preprocess the data and functions required-->
@@ -40,28 +37,18 @@ allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
 ORR_difference=do.call(rbind, lapply(allcancer_types, function(x)
   err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
                                                 COI=x,
-<<<<<<< HEAD
                                                 response_measure='ORR'
                                                 # ,th= 20 #ratio_TMB_H_vs_L*100
                                                 )) ))
-=======
-                                                response_measure='ORR',
-                                                th= ratio_TMB_H_vs_L*100)) ))
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 ORR_difference <- data.frame(ORR_difference)
 rownames(ORR_difference)=allcancer_types
 
 OS_difference=do.call(rbind, lapply(allcancer_types, function(x)
   err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
                                                 COI=x,
-<<<<<<< HEAD
                                                 response_measure='OS'
                                                 # ,th= 20 #ratio_TMB_H_vs_L*100
                                                 ))) )
-=======
-                                                response_measure='OS',
-                                                th= ratio_TMB_H_vs_L*100))) )
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 ## 1/HR to keep same direction for TMB power
 OS_difference <- data.frame(OS_difference)
 OS_difference$effect_size= 1/OS_difference$effect_size
@@ -70,14 +57,9 @@ rownames(OS_difference)=allcancer_types
 PFS_difference=do.call(rbind, lapply(allcancer_types, function(x)
   err_handle(Calculate_TMB_Response_association(infunc_df= mskcc_combined,
                                                 COI=x,
-<<<<<<< HEAD
                                                 response_measure='PFS'
                                                 # ,th= 20 #ratio_TMB_H_vs_L*100
                                                 ))) )
-=======
-                                                response_measure='PFS',
-                                                th= ratio_TMB_H_vs_L*100))) )
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 PFS_difference <- data.frame(PFS_difference)
 PFS_difference$effect_size= 1/PFS_difference$effect_size
 rownames(PFS_difference)=allcancer_types
@@ -209,11 +191,7 @@ Panel2_D <- ggplot(df2plot_pearson, aes(x=effect_size, y= abundance, size= -log(
 ```
 
 
-<<<<<<< HEAD
 <!--Update - Revision 1: Top Modulators when excluding the PAAD-->
-=======
-<!--Revision 1: Top Modulators when excluding the PAAD-->
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 ```{r}
 features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]])
 df_all_cor=data.frame(features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_cancerTypes[[1]]),
@@ -225,7 +203,6 @@ df_all_cor=data.frame(features=rownames(Fig_PFS_Only_Sig_Tmb.Resp_associated_can
            orr_all = Fig_ORR_allcancer_types[[1]][features,]$estimate.rho)
 
 df_all_cor$mean_row= rowMeans(abs(df_all_cor[,-1]),2)
-<<<<<<< HEAD
 df_all_cor[,1]=gsub('\\.',' ',gsub('\\.\\.',' ',df_all_cor[,1]))
 
 features_ranked = data.frame(ranked_immune_factors = df_all_cor[order(rowMeans(apply(abs(df_all_cor[,c(-1,-8)]), 2, rank)), decreasing = T),1])
@@ -249,23 +226,6 @@ features_ranked$rank_old= match(stripall2match(features_ranked$ranked_immune_fac
 rank_cor_old_and_new_top_feature= cor.test(features_ranked$rank, features_ranked$rank_old, method = "spearman")
 ```
 
-=======
-
-
-df_all_cor[,1]=gsub('\\.',' ',gsub('\\.\\.',' ',df_all_cor[,1]))
-
-features_ranked=df_all_cor[order(rowMeans(apply(abs(df_all_cor[,c(-1,-8)]), 2, rank)), decreasing = T),1]
-
-### Save the file for the future reference
-# write.csv(features_ranked, '../data/analysis_3_same_sample_no_as_th_10_mut.csv')
-
-ranked_score_top_mods=apply(abs(df_all_cor[,-1]), 2, rank)[df_all_cor[,1] %in% head(features_ranked, 5),]
-round(rowMeans(df_all_cor[match(head(features_ranked, 5), df_all_cor[,1]),-1]), 2)
-
-## check the mean of PDL1 (CPS) across response measure
-mean(unlist(df_all_cor[grep('Combined',df_all_cor$features, ignore.case = T),-1]))
-```
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 
 <!-- Figure 2C (Panel2)-->
 <!--Key modulators- "M1 macrophage","Tumor purity", "Resting dendritic cell", "PDL1 (CPS)", if the top modulator is other than above four modulators, please assign the rank to make it highlighted. eg: (features_ranked[c(1,2,3,4,5,14,15,18)])-->
@@ -284,32 +244,18 @@ MeanCorr_df=data.frame(Modulators=df_all_cor[,1],
 #                        durable_response=rowMeans(df_all_cor[,2:3]),
 #                        ORR= df_all_cor[,4])
 MeanCorr_df$mod_labels=''
-<<<<<<< HEAD
 MeanCorr_df$mod_labels[match((features_ranked$ranked_immune_factors[c(1,2,3,6)]),MeanCorr_df$Modulators)]=(features_ranked$ranked_immune_factors[c(1,2,3,6)])
-=======
-MeanCorr_df$mod_labels[match((features_ranked[c(1,2,3,4,5,14,15,18)]),MeanCorr_df$Modulators)]=(features_ranked[c(1,2,3,4,5,14,15,18)])
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 
 panel2_C=ggplot(MeanCorr_df, aes(x=ORR, y=durable_response, label=mod_labels))+
   geom_point(aes(color= mod_labels!=''))+
   geom_label_repel(min.segment.length = 0, size=3)+
-<<<<<<< HEAD
   theme_bw(base_size = 18)+
-=======
-  theme_bw(base_size = 10)+
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
   scale_color_manual(values = c("darkgrey","blue"))+
   labs(x='Correlation strength with TMB Power (Using ORR)',
        y='Correlation strength with TMB Power (Using OS/PFS)')+
   theme(legend.position = 'none')
   
-<<<<<<< HEAD
 ggsave('../Result_fgures/Panel_2_C.pdf', panel2_C, height=5, width =5 , units = 'in', dpi = 500)
-=======
-ggsave('../Result_fgures/Panel_2_C.pdf', panel2_C, height=4, width = 4, units = 'in', dpi = 500)
-
-
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 ```
 
 

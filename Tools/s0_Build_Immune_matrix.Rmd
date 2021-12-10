@@ -7,7 +7,6 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 ```{r}
-<<<<<<< HEAD
 # Sys.getenv("RSTUDIO_PANDOC")
 # Sys.setenv(RSTUDIO_PANDOC= "/c/Program Files/RStudio/bin/pandoc/")
 # remove.packages('vctrs')
@@ -21,22 +20,13 @@ library(statar)
 library(ggplot2)
 library(ggpubr)
 library(readxl)
-=======
-Sys.getenv("RSTUDIO_PANDOC")
-Sys.setenv(RSTUDIO_PANDOC= "/Applications/RStudio.app/Contents/MacOS/pandoc")
-install.packages("tidyr")
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 library(tidyr)
 ```
 
 <!-- Load and  build Pan-Immune features from TCGA-->
 ```{r}
-<<<<<<< HEAD
 pan_immune_matrix=readxl::read_xlsx('C:/Users/sapph/Downloads/NIH/Immune_determinant_for_power_of_TMB/data/1-s2.0-S1074761318301213-mmc2.xlsx')
 pan_immune_matrix
-=======
-pan_immune_matrix=readxl::read_xlsx('../data/1-s2.0-S1074761318301213-mmc2.xlsx')
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 pan_immune_matrix_prep= pan_immune_matrix[,-c(1, 3, 4)]
 pan_immune_matrix_prep=data.frame(pan_immune_matrix_prep[,1], apply(pan_immune_matrix_prep[,-1], 2, as.numeric))
 immune_cells_by_cancerType=aggregate(.~TCGA.Study , pan_immune_matrix_prep,
@@ -70,70 +60,7 @@ colnames(immune_cells_by_cancerType)
 
 # Immune_matrix_TCGA= t(immune_cells_by_cancerType)
 
-<<<<<<< HEAD
 ```
-=======
-```
-<!--Analysis reviewer 1 :R1-->
-<!-- Selection of Pan-Immune features from TCGA based on primary tumor and Stage 4 samples-->
-```{r}
-tcga_pan_immune_demo= read.csv('../data/Survival_SupplementalTable_S1_20171025_xena_sp.txt', sep = '\t', row.names = 1)
-
-## selection of patients only with primary solid tumor 
-tcga_pan_immune_demo= tcga_pan_immune_demo[grep("01",rownames(tcga_pan_immune_demo)),] 
-tcga_pan_immune_demo= tcga_pan_immune_demo[!duplicated(tcga_pan_immune_demo$X_PATIENT),]
-
-#### Find the samples with demographic info ####
-intersecting_sample=intersect(pan_immune_matrix$`TCGA Participant Barcode`, tcga_pan_immune_demo$X_PATIENT)
-
-#### Creating of the new pan immune dataframe with the stage information.####
-pan_immune_matrix_with_COI= pan_immune_matrix[(pan_immune_matrix$`TCGA Participant Barcode`) %in% (intersecting_sample), -c(3,4)]
-
-pan_immune_factor_with_demo = data.frame(pan_immune_matrix_with_COI[, c(1,2)],apply(pan_immune_matrix_with_COI[,-c(1,2)], 2, as.numeric), Tumor_stage = tcga_pan_immune_demo[(tcga_pan_immune_demo$X_PATIENT) %in% (intersecting_sample),'ajcc_pathologic_tumor_stage'])
-
-pan_immune_factor_with_demo$TCGA.Study[(pan_immune_factor_with_demo$TCGA.Study == "LUAD" ) | (pan_immune_factor_with_demo$TCGA.Study == "LUSC" )] = "NSCLC"
-
-rownames(pan_immune_factor_with_demo)= pan_immune_factor_with_demo$TCGA.Participant.Barcode
-pan_immune_factor_with_demo= pan_immune_factor_with_demo[,-c(1)]
-
-####Samples for selected cancer type#####
-####Cancer of interest is taken from the file s1_load_preprocess_mskcc, would suggest to run it first#####
-pan_immune_factor_with_cancerOI = pan_immune_factor_with_demo[pan_immune_factor_with_demo$TCGA.Study %in% cancerTypes_of_Interest,]
-
-####Samples for stage 4 cancer type#####
-pan_immune_factor_with_stage = pan_immune_factor_with_cancerOI[pan_immune_factor_with_cancerOI$Tumor_stage == "Stage IV",]
-
-```
-<!--Analysis reviewer 2: R2-->
-<!-- Box plot Pan-Immune features (Top Modulator) from TCGA: Facet-->
-```{r}
-long_pan_immune_df= pan_immune_factor_with_cancerOI %>% gather(immune_factors, RNA_exp, 2:61)
-
-long_pan_immune_df= long_pan_immune_df[long_pan_immune_df$immune_factors %in% c("Dendritic.Cells.Resting",
-                                                                                "Macrophages.M1"),]
-long_pan_immune_df$immune_factors[long_pan_immune_df$immune_factors == "Dendritic.Cells.Resting"] = "Resting dendritic cell"
-
-long_pan_immune_df$immune_factors[long_pan_immune_df$immune_factors == "Macrophages.M1"] = "M1 Macrophages"
-
-Supp_figure_7 = ggplot(long_pan_immune_df, mapping= aes(x= reorder((TCGA.Study), as.numeric(RNA_exp), na.rm = TRUE), y = as.numeric(RNA_exp)))+
-  geom_boxplot()+
-  facet_wrap(~ (immune_factors), scales = "free", ncol = 1)+
-  labs(y="Modulators activity (derived  from CIBERSORT)", x="Cancer Type", 
-       subtitle="Variance of Immune Factors within cancer types")+
-  theme_bw(base_size = 12)+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-  stat_summary(fun=mean,shape=1,col='red',geom='point')
-
-ggsave('../Result_fgures/sup_figure_7.jpg', Supp_figure_7, height=8, width = 8, units = 'in', dpi = 300)
-
-####Quantitative ####
-Rank_cor_resting_DC= long_pan_immune_df[long_pan_immune_df$immune_factors == "Resting dendritic cell",]
-Rank_cor_macrophage= long_pan_immune_df[long_pan_immune_df$immune_factors == "M1 Macrophages",]
-Rank_cor_resting_DC_median= aggregate(.~TCGA.Study , Rank_cor_macrophage,
-                                     function(x) median(x, na.rm=T),  na.action = NULL)
-
-```
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 
 <!-- Divide them into diff types of info -->
 ```{r}
@@ -147,18 +74,7 @@ colnames(Immune_Cell_abundance)[grep('Neutrophils',colnames(Immune_Cell_abundanc
 ```
 <!-- Joo's immune matrix -->
 ```{r}
-<<<<<<< HEAD
 immune_factor= read.csv("../data/immune_factors_response_joo_v2.csv", row.names = 1)
-=======
-immune_factor= read.csv("../data/immune_factors_response_joo.csv", row.names = 1)
-
-## the space after values create the "Â" symbol which make the columns as character
-# lapply(immune_factor,class)
-immune_factor[]= sapply(immune_factor, function(x) as.numeric(gsub("Â","",x)))
-
-# unlist(immune_factor[1,])[na.omit(match(c('TGCT','DLBC','CESC', 'STAD', 'READ', 'PRAD','CHOL', 'MESO', 'KICH'),
-#       names(unlist(immune_factor[1,]))))]
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 
 f1=18/(18+31); f2=1-f1
 immune_factor$COAD= sapply(seq(1:nrow(immune_factor)), function (x) 

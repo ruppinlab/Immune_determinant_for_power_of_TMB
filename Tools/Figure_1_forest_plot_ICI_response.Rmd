@@ -10,10 +10,6 @@ source_rmd <- function(x, ...) {
   options(knitr.duplicate.label = 'allow')
   source(purl(x, output = tempfile()), ...)
 }
-<<<<<<< HEAD
-=======
-# source_rmd("../Tools/s0_Build_Immune_matrix.Rmd")
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 source_rmd("../Tools/s1_Load_Preprocess_MSKCC.Rmd")
 ```
 
@@ -32,11 +28,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
   
   if(response_measure=='ORR'){
     infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
-<<<<<<< HEAD
     # threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
-=======
-    threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
     # Contigency matrix
     cont_matrix=table( infunc_df_tmb$TMB >= 10, infunc_df_tmb$ORR) ## use threshold instead of 10 
     # Perform fisher test
@@ -47,11 +39,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
                 upper_ci=fisher_test_results_raw$conf.int[2])
   } else if(response_measure =='OS') {
     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
-<<<<<<< HEAD
     # threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
-=======
-    threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
     
     # Perform coxph test
     coxph_model <- coxph(Surv(time = Overall_survival_months,
@@ -63,11 +51,7 @@ Calculate_TMB_Response_association_with_CI<-function(infunc_df= mskcc_combined,
                 upper_ci= summary(coxph_model)$conf.int[1,c(4)])
   }  else if(response_measure=='PFS') {
     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
-<<<<<<< HEAD
     # threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
-=======
-    threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
     
     coxph_model <- coxph(Surv(time = PFS_months,
                               event = PFS_status) ~ (TMB>=10) ,  ## use threshold instead of 10 
@@ -118,19 +102,14 @@ rownames(ORR_cox_results)=allcancer_types
 
 <!--Analysis reviewer 2 : adding the sample size which have high TMB-->
 ```{r}
-<<<<<<< HEAD
 TMB_level_by_cancer_type = table(mskcc_combined$Cancer_Type_acronym,
                                  (mskcc_combined$TMB >10))
-=======
-TMB_level_by_cancer_type=table(mskcc_combined$Cancer_Type_acronym,(mskcc_combined$TMB >10))
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 colnames(TMB_level_by_cancer_type) = c("less_than_10", "greater_than_10")
 ratio_T_F= data.frame(greater_than_10= TMB_level_by_cancer_type[,"greater_than_10"], 
                       less_than_10= TMB_level_by_cancer_type[,"less_than_10"],
                       ratio= TMB_level_by_cancer_type[,"greater_than_10"] / 
                         (TMB_level_by_cancer_type[,"greater_than_10"]+TMB_level_by_cancer_type[,"less_than_10"]))
 
-<<<<<<< HEAD
 mskcc_combined_orr= mskcc_combined[!is.na(mskcc_combined$ORR),]
 TMB_level_by_cancer_type_ORR = table(mskcc_combined_orr$Cancer_Type_acronym,
                                      (mskcc_combined_orr$TMB >10))
@@ -144,19 +123,12 @@ ratio_T_F_OR_PFS= data.frame(greater_than_10= TMB_level_by_cancer_type_ORR[,"gre
 
 # proportion_TMB = ggplot(ratio_T_F, aes(x=reorder(rownames(ratio_T_F), ratio),
 #                                            y= ratio, fill= ratio))+
-=======
-# proportion_TMB=ggplot(ratio_T_F, aes(x=reorder(rownames(ratio_T_F), ratio), y= ratio, fill= ratio))+
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 #   geom_bar(stat = "identity")+
 #   theme_bw(base_size = 15)+
 #   labs(x='Cancer types',
 #        y='Proportion of TMB(>10)')+
 #   coord_flip()
-<<<<<<< HEAD
 
-=======
-# 
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 # ggsave('/Users/neelamf2/Documents/GitHub/Immune_determinant_for_power_of_TMB/Result_fgures/Proportion_TMB_greater_10.pdf', proportion_TMB, height=5, width = 6, units = 'in', dpi = 500)
 ```
 
@@ -181,26 +153,18 @@ no_of_samples_os= samples_by_cancer_type[samples_by_cancer_type[,2]> 1,]
 no_of_samples_os = no_of_samples_os[match(rownames(Figure_1A_plot_df),no_of_samples_os$Cancer_Type_acronym),]
 
 ratio_T_F= ratio_T_F[intersect(rownames(Figure_1A_plot_df),rownames(ratio_T_F)),]
-<<<<<<< HEAD
 ##############
 #fdr correction
 Figure_1A_plot_df$fdr_corrected_pval = p.adjust(Figure_1A_plot_df$pval/2, method = "fdr")
 
 
 ### Adding columns in the forest plot ###
-=======
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 
 tabletext_OS=cbind(c("Cancer Type",
                       rownames(Figure_1A_plot_df)),
                     c("Samples", 
                       no_of_samples_os$ID),
-<<<<<<< HEAD
                     c("# TMB>=10 mut/MB",
-=======
-                   c("Samples
-                     (TMB>=10 mut/MB)",
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
                       round(as.numeric(ratio_T_F$greater_than_10),2)),
                     c("pval",
                       format(Figure_1A_plot_df$pval/2, scientific = T, digits = 2)),
@@ -302,11 +266,7 @@ Figure_1B_plot_df=Figure_1B_plot_df[order(Figure_1B_plot_df$effect_size,
 no_of_samples= samples_each_cancer_type[samples_by_cancer_type$ID >1,]
 no_of_samples= no_of_samples[match(rownames(Figure_1B_plot_df),no_of_samples$Cancer_Type_acronym),]
 
-<<<<<<< HEAD
 ratio_T_F_orr= ratio_T_F_OR_PFS[intersect(rownames(Figure_1B_plot_df),rownames(ratio_T_F_OR_PFS)),]
-=======
-ratio_T_F= ratio_T_F[intersect(rownames(Figure_1B_plot_df),rownames(ratio_T_F)),]
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 colnames(Figure_1B_plot_df)[2]= "pval"
 
 ##############
@@ -318,14 +278,8 @@ tabletext_ORR= cbind(c("Cancer Type",
                    rownames(Figure_1B_plot_df)), 
                  c("# patient",
                    no_of_samples$ID),
-<<<<<<< HEAD
                  c("# TMB>=10 mut/MB",
                       round(as.numeric(ratio_T_F_orr$greater_than_10),2)),
-=======
-                 c("Samples
-                     (TMB>=10 mut/MB)",
-                      round(as.numeric(ratio_T_F$greater_than_10),2)),
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
                  c("pval",
                    format(Figure_1B_plot_df$pval/2, scientific = T, digits = 2)),
                  c("fdr",
@@ -424,14 +378,11 @@ Ex_figure_1_plot_df=Ex_figure_1_plot_df[
 ### number of Samples 
 no_of_samples_PFS= samples_each_cancer_type[samples_by_cancer_type$ID >1,]
 no_of_samples_PFS = no_of_samples_PFS[match(rownames(Ex_figure_1_plot_df),no_of_samples_PFS$Cancer_Type_acronym),]
-<<<<<<< HEAD
 
 ratio_T_F_pfs= ratio_T_F_OR_PFS[intersect(rownames(Ex_figure_1_plot_df),rownames(ratio_T_F_OR_PFS)),]
 
 colnames(Ex_figure_1_plot_df)[2] = "pval"
 Ex_figure_1_plot_df$fdr_corrected_pval = p.adjust(Ex_figure_1_plot_df$pval/2, method = "fdr")
-=======
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
 
 ### plot ###
 tabletext_PFS= cbind(c("Cancer Type",
@@ -471,11 +422,7 @@ styles_PFS <- fpShapesGp(
                gpar(col = ifelse((HR_PFS$pval/2)[11] <0.05, "blue", "red")),
                gpar(col = ifelse((HR_PFS$pval/2)[12] <0.05, "blue", "red"))
                , gpar(col = ifelse((HR_PFS$pval/2)[13] <0.05, "blue", "red"))
-<<<<<<< HEAD
                # , gpar(col = ifelse((HR_PFS$pval/2)[14] <0.05, "blue", "red"))
-=======
-               , gpar(col = ifelse((HR_PFS$pval/2)[14] <0.05, "blue", "red"))
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
   ),
   box = list(gpar(fill = "blue"),
              gpar(fill = ifelse((HR_PFS$pval/2)[1] <0.05, "blue", "red")),
@@ -491,11 +438,7 @@ styles_PFS <- fpShapesGp(
              gpar(fill = ifelse((HR_PFS$pval/2)[11] <0.05, "blue", "red")),
              gpar(fill = ifelse((HR_PFS$pval/2)[12] <0.05, "blue", "red"))
              ,gpar(fill = ifelse((HR_PFS$pval/2)[13] <0.05, "blue", "red"))
-<<<<<<< HEAD
              # ,gpar(fill = ifelse((HR_PFS$pval/2)[14] <0.05, "blue", "red"))
-=======
-             ,gpar(fill = ifelse((HR_PFS$pval/2)[14] <0.05, "blue", "red"))
->>>>>>> c35299f9b79869f425eb086bc1858c00695e4909
   ))
 
 #######################
