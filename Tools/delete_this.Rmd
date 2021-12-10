@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+immune_factor= read.csv("C:/Users/sapph/Downloads/NIH/Immune_determinant_for_power_of_TMB/data/immune_factors_response_joo.csv", row.names = 1)
+## the space after values create the "Â" symbol which make the columns as character
+# lapply(immune_factor,class)
+intact_colnames=colnames(immune_factor)
+immune_factor= apply(immune_factor,1, function(x) as.numeric(gsub("Â","",x)))
+immune_factor=t(immune_factor)
+colnames(immune_factor)=intact_colnames
+immune_factor=as.data.frame(immune_factor)
+
+write.csv(immune_factor, 
+          "C:/Users/sapph/Downloads/NIH/Immune_determinant_for_power_of_TMB/data/immune_factors_response_joo_v2.csv")
+
+
+# unlist(immune_factor[1,])[na.omit(match(c('TGCT','DLBC','CESC', 'STAD', 'READ', 'PRAD','CHOL', 'MESO', 'KICH'),
+#       names(unlist(immune_factor[1,]))))]
+# 
+# f1=18/(18+31); f2=1-f1
+# immune_factor$COAD= sapply(seq(1:nrow(immune_factor)), function (x) 
+#   (as.numeric(immune_factor[x,'COAD_MSI'])* f1 + as.numeric(immune_factor[x,'COAD_MSS'])* f2))
+# immune_factor$NSCLC= sapply(seq(1:nrow(immune_factor)), function (x) 
+#   (immune_factor[x,'LUAD']* 0.5 + immune_factor[x,'LUAD']* 0.5))
+# 
+# immune_factor= data.frame(t(immune_factor))
+# # mapping=match(rownames(immune_factor), rownames(Immune_Cell_abundance))
+# # immune_factor$Lymphocytes=(Immune_Cell_abundance$Lymphocytes)[mapping]
+# # immune_factor$NTL=(Immune_Cell_abundance$Neutrophils/Immune_Cell_abundance$Lymphocytes)[mapping]
+# 
+# # lapply(immune_factor,class)
+# colnames(immune_factor)[grep('CPS',colnames(immune_factor))]=
+#   'PDL1 (combined positive score)'
+
+```
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

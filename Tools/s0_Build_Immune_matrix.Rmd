@@ -7,15 +7,28 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 ```{r}
-Sys.getenv("RSTUDIO_PANDOC")
-Sys.setenv(RSTUDIO_PANDOC= "/Applications/RStudio.app/Contents/MacOS/pandoc")
+# Sys.getenv("RSTUDIO_PANDOC")
+# Sys.setenv(RSTUDIO_PANDOC= "/c/Program Files/RStudio/bin/pandoc/")
+# remove.packages('vctrs')
+# install.packages('vctrs')
+# packageVersion('vctrs')
+library(namespace)
+library(corrplot)
+require("survival")
+require(statar)
+library(statar)
+library(ggplot2)
+library(ggpubr)
+library(readxl)
+library(tidyr)
 ```
 
 <!-- Load and  build Pan-Immune features from TCGA-->
 ```{r}
-pan_immune_matrix=readxl::read_xlsx('../data/1-s2.0-S1074761318301213-mmc2.xlsx')
-pan_immune_matrix=pan_immune_matrix[,-c(1, 3, 4)]
-pan_immune_matrix_prep=data.frame(pan_immune_matrix[,1], apply(pan_immune_matrix[,-1], 2, as.numeric))
+pan_immune_matrix=readxl::read_xlsx('C:/Users/sapph/Downloads/NIH/Immune_determinant_for_power_of_TMB/data/1-s2.0-S1074761318301213-mmc2.xlsx')
+pan_immune_matrix
+pan_immune_matrix_prep= pan_immune_matrix[,-c(1, 3, 4)]
+pan_immune_matrix_prep=data.frame(pan_immune_matrix_prep[,1], apply(pan_immune_matrix_prep[,-1], 2, as.numeric))
 immune_cells_by_cancerType=aggregate(.~TCGA.Study , pan_immune_matrix_prep,
                                      function(x) median(x, na.rm=T),  na.action = NULL)
 
@@ -43,9 +56,12 @@ immune_signature=c("Macrophage.Regulation","Lymphocyte.Infiltration.Signature.Sc
 
 to_remove=c("OS", "OS.Time", "PFI", "PFI.Time", "Neutrophils...60", "Eosinophils...61")
 immune_cells_by_cancerType=immune_cells_by_cancerType[,!(colnames(immune_cells_by_cancerType) %in% to_remove)]
+colnames(immune_cells_by_cancerType)
+
 # Immune_matrix_TCGA= t(immune_cells_by_cancerType)
-# write.csv(sample_list, file = "../data/Sample_list_used_for_analysis.csv")
+
 ```
+
 <!-- Divide them into diff types of info -->
 ```{r}
 Immune_Cell_abundance=immune_cells_by_cancerType[,!(colnames(immune_cells_by_cancerType) %in% c(non_immune_signature, immune_signature))]
@@ -58,23 +74,23 @@ colnames(Immune_Cell_abundance)[grep('Neutrophils',colnames(Immune_Cell_abundanc
 ```
 <!-- Joo's immune matrix -->
 ```{r}
-immune_factor= read.csv("../data/immune_factors_response_joo.csv", row.names = 1)
-
-# unlist(immune_factor[1,])[na.omit(match(c('TGCT','DLBC','CESC', 'STAD', 'READ', 'PRAD','CHOL', 'MESO', 'KICH'),
-#       names(unlist(immune_factor[1,]))))]
+immune_factor= read.csv("../data/immune_factors_response_joo_v2.csv", row.names = 1)
 
 f1=18/(18+31); f2=1-f1
 immune_factor$COAD= sapply(seq(1:nrow(immune_factor)), function (x) 
-  (immune_factor[x,'COAD_MSI']* f1 + immune_factor[x,'COAD_MSS']* f2))
+  (as.numeric(immune_factor[x,'COAD_MSI'])* f1 + as.numeric(immune_factor[x,'COAD_MSS'])* f2))
 immune_factor$NSCLC= sapply(seq(1:nrow(immune_factor)), function (x) 
   (immune_factor[x,'LUAD']* 0.5 + immune_factor[x,'LUAD']* 0.5))
+
 immune_factor= data.frame(t(immune_factor))
 # mapping=match(rownames(immune_factor), rownames(Immune_Cell_abundance))
 # immune_factor$Lymphocytes=(Immune_Cell_abundance$Lymphocytes)[mapping]
 # immune_factor$NTL=(Immune_Cell_abundance$Neutrophils/Immune_Cell_abundance$Lymphocytes)[mapping]
+
 colnames(immune_factor)[grep('CPS',colnames(immune_factor))]=
   'PDL1 (combined positive score)'
 ```
+
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
