@@ -16,10 +16,10 @@ pandoc version > 1.12.3 <br />
 ```
 git clone https://github.com/ruppinlab/Immune_determinant_for_power_of_TMB.git
 ```
-In the Terminal, navigate to the Tools directory and Run "Run.sh file"
+In the Terminal, navigate to the Code directory and Run "Run.sh file"
 
 ```
-$ cd ./"--PATH of your directory where file is located--"/Immune_determinant_for_power_of_TMB/Tools
+$ cd ./"--PATH of your directory where file is located--"/Immune_determinant_for_power_of_TMB/code
 $ sh ./Run.sh
 ```
 #### The Run.sh file runs all the RMD scripts:<br />

@@ -1,0 +1,269 @@
+---
+title: "R Notebook"
+## title: "Data preprocessing and function"
+output: html_notebook
+---
+<!-- Libraries and sourcing the files required-->
+```{r}
+# install.packages("https://cran.r-project.org/src/contrib/Archive/rlang/rlang_0.4.10.tar.gz", repos = NULL, type="source")
+# remove.packages('xfun')
+# install.packages('xfun')
+# packageVersion('xfun')
+require(ggrepel)
+library(forestplot)
+library(corrplot)
+require("survival")
+require(statar)
+library(ggplot2)
+library(ggpubr)
+library(readxl)
+library(tidyr)
+require("survminer")
+library(caret)
+# setwd('../data/')
+```
+
+<!--Load MSKCC combined data -->
+```{r}
+mskcc_combined= read.csv("../data/mskcc_combined_updated.csv")
+
+# ########################################
+### Analysis: reviewer 2: R3 - Repeat Analysis excluding PAAD #################
+# mskcc_combined= mskcc_combined[!mskcc_combined$Cancer_Type_acronym == "PAAD",]
+# ########################################
+table(mskcc_combined$Sex)
+mskcc_combined$Cancer_Type_acronym=factor(mskcc_combined$Cancer_Type_acronym)
+samples_by_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_combined, length)
+cancerTypes_of_Interest = samples_by_cancer_type[,1][samples_by_cancer_type[,2]> 1]
+
+## removing cancer types where PFS/ ORR is NA for figure 1B and ex figure 1
+mskcc_df_ORR_PFS= mskcc_combined[!(is.na(mskcc_combined$PFS_status)),]
+samples_each_cancer_type = aggregate(ID ~ Cancer_Type_acronym,mskcc_df_ORR_PFS, length)
+cancerTypes_each_Interest = samples_each_cancer_type[,1][samples_each_cancer_type[,2]> 1]
+```
+<!-- funtion Error handle -->
+```{r}
+err_handle<-function(x)
+{ tryCatch(x, error=function(e){NA}) 
+  }
+```
+<!--Analysis: reviewer 3- R5, finding equal number of sample when TMB >= 10 mut/MB, using percentile-->
+```{r}
+ratio_TMB_H_vs_L= nrow(mskcc_combined[mskcc_combined$TMB > 10,])/length(mskcc_combined$TMB)
+
+TMB_level_by_cancer_type=table(mskcc_combined$Cancer_Type,(mskcc_combined$TMB >= 10))
+colnames(TMB_level_by_cancer_type) = c("less_than_10", "greater_than_10")
+ratio_T_F= data.frame(greater_than_10= TMB_level_by_cancer_type[,"greater_than_10"], 
+                      less_than_10= TMB_level_by_cancer_type[,"less_than_10"],
+                      ratio= TMB_level_by_cancer_type[,"greater_than_10"] / 
+                        (TMB_level_by_cancer_type[,"greater_than_10"]+TMB_level_by_cancer_type[,"less_than_10"])
+                      )
+sum(ratio_T_F$greater_than_10)
+
+
+### Sanity check####
+check_sample_equal_in_thresholds<-function(infunc_df= mskcc_combined,
+                                           COI="NSCLC",
+                                           th= ratio_TMB_H_vs_L){
+  infunc_df_tmb= infunc_df[infunc_df$Cancer_Type_acronym == COI,]
+  
+  threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(.266))]
+  TMB_level_by_cancer_type = table(infunc_df_tmb$Cancer_Type, infunc_df_tmb$TMB >= threshold)
+  c(less_than_threshold= TMB_level_by_cancer_type[,1],
+    greater_than_threshold= TMB_level_by_cancer_type[,2], 
+    threshold=threshold)
+}
+
+allcancer_types=levels(mskcc_combined$Cancer_Type_acronym)
+samples_equal_in_threshold_each_cancer_type = do.call(rbind, lapply(allcancer_types, function(x)
+  err_handle(check_sample_equal_in_thresholds(infunc_df= mskcc_combined,
+                                                COI=x,
+                                                th= ratio_TMB_H_vs_L)) ))
+
+rownames(samples_equal_in_threshold_each_cancer_type)=allcancer_types
+sum(samples_equal_in_threshold_each_cancer_type[,'greater_than_threshold'])
+```
+```{r}
+table(mskcc_combined$stage)
+
+```
+
+<!-- Functions needed-->
+<!--Update: in original analysis we did not use the argument th, please uncomment the former function (code) and comment the latter function (code) when you perform the analysis based on TMB high >= 10 mut/MB -->
+
+<!--Analysis: Reviewer 3 - R4, repeat the analysis at different percentile (10, 20 percentile)-->
+<!--Update: use of argument "th" in function for the making the percentile based TMB threshold instead of 10 mut/MB -->
+
+```{r}
+############################################
+#uncomment this function for the original analysis
+##### Calculates TMB and Response association
+############################################
+
+Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
+                                             COI="NSCLC",
+                                             response_measure='ORR'){
+  infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type_acronym == COI)),]
+  #infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
+
+  if(response_measure=='ORR'){
+    infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+
+    # Contigency matrix
+    cont_matrix=table(infunc_df_tmb$TMB >= 10, infunc_df_tmb$ORR)
+    # Perform fisher test
+    fisher_test_results_raw=fisher.test(cont_matrix)
+    to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
+                P=fisher_test_results_raw$p.value)
+  } else if(response_measure =='OS') {
+    infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
+
+    # Perform coxph test
+    coxph_model <- coxph(Surv(time = Overall_survival_months,
+                              event = Overall_survival_status) ~ (TMB >= 10) ,
+                         data = infunc_df_tmb)
+    to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+                P=summary(coxph_model)$coefficients[1,c(5)])
+  }  else if(response_measure=='PFS') {
+    infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
+
+    coxph_model <- coxph(Surv(time = PFS_months,
+                              event = PFS_status) ~ (TMB >= 10) ,
+                         data = infunc_df_tmb)
+    to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+                P=summary(coxph_model)$coefficients[1,c(5)])
+  }
+  names(to_return)=c('effect_size', 'P')
+  to_return
+}
+
+# Calculate_TMB_Response_association<-function(infunc_df= mskcc_combined,
+#                                              COI="NSCLC",
+#                                              response_measure='ORR',
+#                                              th= 20#ratio_TMB_H_vs_L*100
+#                                              ){
+#   infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type_acronym == COI)),]
+#   #infunc_df_tmb= infunc_df[((infunc_df$Cancer_Type == COI)),]
+# 
+#   if(response_measure=='ORR'){
+#     infunc_df_tmb=infunc_df_tmb[!is.na(infunc_df_tmb$ORR),]
+#     threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
+# 
+#     # Contigency matrix
+#     cont_matrix=table(infunc_df_tmb$TMB >= threshold, infunc_df_tmb$ORR)
+#     # Perform fisher test
+#     fisher_test_results_raw=fisher.test(cont_matrix)
+#     to_return=c(effect_size=unlist(fisher_test_results_raw$estimate),
+#                 P=fisher_test_results_raw$p.value)
+#   } else if(response_measure =='OS') {
+#     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$Overall_survival_months),]
+#     threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
+# 
+#     # Perform coxph test
+#     coxph_model <- coxph(Surv(time = Overall_survival_months,
+#                               event = Overall_survival_status) ~ (TMB >= threshold) ,
+#                          data = infunc_df_tmb)
+#     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+#                 P=summary(coxph_model)$coefficients[1,c(5)])
+#   }  else if(response_measure=='PFS') {
+#     infunc_df_tmb= infunc_df_tmb[!is.na(infunc_df_tmb$PFS_months),]
+#     threshold=sort(infunc_df_tmb$TMB, decreasing = T)[round(nrow(infunc_df_tmb)*(th/100))]
+# 
+#     coxph_model <- coxph(Surv(time = PFS_months,
+#                               event = PFS_status) ~ (TMB >= threshold) ,
+#                          data = infunc_df_tmb)
+#     to_return=c(effect_size=summary(coxph_model)$coefficients[1,c(2)],
+#                 P=summary(coxph_model)$coefficients[1,c(5)])
+#   }
+#   names(to_return)=c('effect_size', 'P')
+#   to_return
+# }
+```
+
+```{r}
+# Given a set of cancer types & Immuen matrix
+# Tmb_Resp_Association - Or TRA
+create_corr_with_Immune_factors<- function(infunc_cancer_types=allcancer_types,
+                                           infunc_immune_matrix=immune_factor,
+                                           infun_Tmb_Resp_Association = ORR_difference,
+                                           response_type='ORR',
+                                           consider_cancer_type='all_cancerTypes', 
+                                           infunc_title='All cancerTypes'){
+  infun_Tmb_Resp_Association=infun_Tmb_Resp_Association[
+    !is.na(infun_Tmb_Resp_Association[,1]) & is.finite(infun_Tmb_Resp_Association[,1]),]
+  infunc_cancer_types_filtered=intersect(rownames(infun_Tmb_Resp_Association),
+                                         infunc_cancer_types)
+  ## filter to remove features with high number of zeroes
+  infunc_immune_matrix_filtered= infunc_immune_matrix[,!colSums(infunc_immune_matrix!= 0,na.rm = T) <= 8]
+  
+  ## Correlation
+  filtered_features_resp = infunc_immune_matrix_filtered[na.omit(match(infunc_cancer_types_filtered,
+                                                rownames(infunc_immune_matrix_filtered))),]
+  
+  target_resp= infun_Tmb_Resp_Association[rownames(filtered_features_resp),'effect_size']
+  
+  # cor.test(features_resp[,2],target_resp)
+  correlation_matrix= data.frame(t(apply(filtered_features_resp, 2, function(x)
+    unlist(cor.test(x, target_resp, method = 's')[c(3, 4)])) ))
+  correlation_matrix=na.omit(correlation_matrix[order(correlation_matrix[,2],decreasing = T),])
+
+  correlation_matrix$immune_factors=gsub('\\.',' ',gsub('\\.\\.',' ',rownames(correlation_matrix)))
+    
+  Panel2 <- ggplot(data=correlation_matrix, aes(x=reorder(immune_factors, estimate.rho),
+                                                  y=estimate.rho
+                                                  # , color= p.value <0.05
+                                                  ))+
+      geom_bar(aes(fill= estimate.rho),stat="identity")+
+      scale_fill_gradient2(low = "red",mid = "dark grey",high = "dark green")+
+      coord_flip() + # horizontal bars  
+      geom_text(aes(y = 0, label = immune_factors, hjust = as.numeric(estimate.rho > 0))) +  # label text based on value
+      theme_bw(base_size = 18)+
+      theme(axis.text.y = element_blank(), legend.position="top",
+            plot.title = element_text(color="red", size=14, face="bold.italic"))+
+      labs(x='Immune Factors', y=paste('Spearman correlation with Power of TMB \n(using ',response_type,')',sep='' ))+
+      ggtitle(infunc_title)
+  ggsave(paste('../results/tmb-responseVSTME_factors',
+               consider_cancer_type,'_',
+               response_type,'.pdf', sep ='' ),
+         Panel2, height=7, width = 6, units = 'in', dpi = 500)
+  list(correlation_matrix, Panel2)
+}
+```
+
+```{r}
+create_scatter_plot<- function(infunc_cancer_types=allcancer_types,
+                               infunc_immune_matrix=immune_factor,
+                               infun_Tmb_Resp_Association = OS_difference,
+                               response_type='OS',
+                               consider_cancer_type='all_cancerTypes', 
+                               infunc_title='All cancerTypes',
+                               immune_feature_of_interest= colnames(infunc_immune_matrix)[37]){
+  df2plot=data.frame(infun_Tmb_Resp_Association[infunc_cancer_types,],
+             features_resp= infunc_immune_matrix[infunc_cancer_types,immune_feature_of_interest])
+  df2plot=na.omit(df2plot)
+  Panel3 <- ggplot(df2plot, aes(x=rank(effect_size), y=rank(features_resp), size= -log(P, 10) )) + 
+    stat_smooth(method='lm')+
+    geom_point()+
+    theme_bw(base_size = 15)+
+    # theme(legend.position = 'none')+
+    labs(x='Power of TMB (rank)',
+         y=paste(gsub('\\.',' ',immune_feature_of_interest),  '(rank)'), size='-log10(P)')+
+    stat_cor(label.y = 0, label.x = 5, method = 'p', cor.coef.name = 'rho', size=5)+
+    geom_label_repel(aes(label=rownames(df2plot), size=0.5), show.legend = F)+
+    coord_flip()
+  ggsave(paste('../results/tmb-responseVS',
+               immune_feature_of_interest,
+               consider_cancer_type,'_',
+               response_type,'.pdf', sep ='' ),
+         Panel3, height=5, width = 5, units = 'in', dpi = 500)
+  # list(correlation_matrix, Panel3)
+}
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+

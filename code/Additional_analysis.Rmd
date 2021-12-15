@@ -1,0 +1,378 @@
+---
+title: "Additional Analysis"
+output: html_document
+---
+<!--Sourcing the required files-->
+```{r}
+library(knitr)
+source_rmd <-function(x, ...) {
+  options(knitr.duplicate.label = 'allow')
+  source(purl(x, output = tempfile()), ...)
+}
+source_rmd("../code/s0_Build_Immune_matrix.Rmd")
+source_rmd("../code/s1_Load_Preprocess_MSKCC.Rmd")
+```
+
+<!--Analysis reviewer 1 :R1-->
+<!-- Selection of Pan-Immune features from TCGA based on primary tumor and Stage 4 samples-->
+```{r}
+tcga_pan_immune_demo= read.csv('../data/Survival_SupplementalTable_S1_20171025_xena_sp.txt', sep = '\t', row.names = 1)
+
+## selection of patients only with primary solid tumor 
+tcga_pan_immune_demo= tcga_pan_immune_demo[grep("01",rownames(tcga_pan_immune_demo)),] 
+tcga_pan_immune_demo= tcga_pan_immune_demo[!duplicated(tcga_pan_immune_demo$X_PATIENT),]
+
+###################
+#Find the samples with demographic info 
+###################
+intersecting_sample=intersect(pan_immune_matrix$`TCGA Participant Barcode`, tcga_pan_immune_demo$X_PATIENT)
+
+###################
+# Creating of the new pan immune dataframe with the stage information.
+###################
+pan_immune_matrix_with_COI= pan_immune_matrix[(pan_immune_matrix$`TCGA Participant Barcode`) %in% (intersecting_sample), -c(3,4)]
+
+pan_immune_factor_with_demo = data.frame(pan_immune_matrix_with_COI[, c(1,2)],apply(pan_immune_matrix_with_COI[,-c(1,2)], 2, as.numeric), Tumor_stage = tcga_pan_immune_demo[(tcga_pan_immune_demo$X_PATIENT) %in% (intersecting_sample),'ajcc_pathologic_tumor_stage'])
+
+
+pan_immune_factor_with_demo$TCGA.Study[(pan_immune_factor_with_demo$TCGA.Study == "LUAD" ) | (pan_immune_factor_with_demo$TCGA.Study == "LUSC" )] = "NSCLC"
+
+rownames(pan_immune_factor_with_demo)= pan_immune_factor_with_demo$TCGA.Participant.Barcode
+pan_immune_factor_with_demo= pan_immune_factor_with_demo[,-c(1)]
+
+####Samples for selected cancer type#####
+####Cancer of interest is taken from the file s1_load_preprocess_mskcc, would suggest to run it first#####
+pan_immune_factor_with_cancerOI = pan_immune_factor_with_demo[pan_immune_factor_with_demo$TCGA.Study %in% cancerTypes_of_Interest,]
+
+######################
+#Samples for stage 4 cancer type
+######################
+pan_immune_factor_with_stage = pan_immune_factor_with_cancerOI[grepl("III|IV",pan_immune_factor_with_cancerOI$Tumor_stage),]
+table(pan_immune_factor_with_stage$Tumor_stage)
+
+######################
+# to test wheather the distribution of TMB and Nonsilent.Mutation.Rate are same
+######################
+median(log10(mskcc_combined$TMB))
+median(log10(pan_immune_factor_with_cancerOI$Nonsilent.Mutation.Rate), na.rm = T)
+
+######################
+# To filter the immune factor
+######################
+match_immune_factor = readxl::read_excel("../data/immune_factors_response_joo.xlsx", sheet = 2)
+Filtered_immune_factor= intersect(match_immune_factor$`TCGA Immune factor`, colnames(pan_immune_factor_with_stage))
+
+filtered_pan_immune_factor= data.frame(TCGA.Study= pan_immune_factor_with_stage[,c('TCGA.Study')],pan_immune_factor_with_stage[,colnames(pan_immune_factor_with_cancerOI) %in% Filtered_immune_factor])
+
+filtered_pan_immune_factor= aggregate(.~TCGA.Study , filtered_pan_immune_factor,
+                                     function(x) median(x, na.rm=T),  na.action = NULL)
+
+filtered_pan_immune_factor= data.frame(apply(filtered_pan_immune_factor[,-1], 2, as.numeric),
+                                      row.names = (filtered_pan_immune_factor$TCGA.Study))
+filtered_pan_immune_factor$`log10(MB)` = log(filtered_pan_immune_factor$Nonsilent.Mutation.Rate,10)
+
+```
+
+```{r}
+######################
+# renaming the column of the filtered df to match the immune factor and compute the rank correlation
+######################
+# dataframe with possible names to replace
+dat = na.omit(data.frame(old=match_immune_factor$`TCGA Immune factor`, new=match_immune_factor$`immune factors`, stringsAsFactors=FALSE))
+
+# find which old names are present
+namesMatched <- dat[dat$old %in% names(filtered_pan_immune_factor),]
+#renaming
+names(filtered_pan_immune_factor)[match(namesMatched[,"old"], names(filtered_pan_immune_factor))] = namesMatched[,"new"]
+```
+
+<!--Analysis reviewer 2: R3-->
+<!-- Box plot Pan-Immune features (Top Modulator) from TCGA: Facet to find the mean and median within cancer type-->
+```{r}
+long_pan_immune_df= pan_immune_factor_with_cancerOI %>% gather(immune_factors, RNA_exp, 2:61)
+long_pan_immune_df= long_pan_immune_df[long_pan_immune_df$immune_factors %in% c("Dendritic.Cells.Resting",
+                                                                                "Macrophages.M1"),]
+long_pan_immune_df$immune_factors[long_pan_immune_df$immune_factors == "Dendritic.Cells.Resting"] = "Resting dendritic cell"
+
+long_pan_immune_df$immune_factors[long_pan_immune_df$immune_factors == "Macrophages.M1"] = "M1 Macrophages"
+
+
+#######################
+## Box plot
+#######################
+Supp_figure_7 = ggplot(long_pan_immune_df, mapping= aes(x= reorder((TCGA.Study), as.numeric(RNA_exp), na.rm = TRUE), y = as.numeric(RNA_exp)))+
+  geom_boxplot()+
+  facet_wrap(~ (immune_factors), scales = "free", ncol = 1)+
+  labs(y="Modulators activity (derived  from CIBERSORT)", x="Cancer Type", 
+       subtitle="Variance of Immune Factors within cancer types")+
+  theme_bw(base_size = 12)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  stat_summary(fun=mean,shape=1,col='red',geom='point')
+
+# ggsave('../results/sup_figure_7.jpg', Supp_figure_7, height=8, width = 8, units = 'in', dpi = 300)
+
+####Quantitative: Rank correlation test ####
+#######################
+#preparing df for cor
+#######################
+pan_immune_df_med= as.data.frame(sapply(c("M1 Macrophages","Resting dendritic cell"), function (y)
+  sapply(unique(long_pan_immune_df$TCGA.Study), function (x) 
+  median(long_pan_immune_df[(long_pan_immune_df$TCGA.Study == x) & 
+                        (long_pan_immune_df$immune_factors == y),'RNA_exp'], na.rm = TRUE))
+  )
+)
+
+pan_immune_df_mean= as.data.frame(sapply(c("M1 Macrophages","Resting dendritic cell"), function (y)
+  sapply(unique(long_pan_immune_df$TCGA.Study), function (x) 
+  mean(long_pan_immune_df[(long_pan_immune_df$TCGA.Study == x) & 
+                        (long_pan_immune_df$immune_factors == y),'RNA_exp'], na.rm = TRUE))
+  )
+)
+#######################
+#Rank correlation between the mean and median of "M1 Macrophages" & "Resting dendritic cell" within cancer type
+#######################
+cor.test(pan_immune_df_med$`M1 Macrophages`, pan_immune_df_mean$`M1 Macrophages`, method = "spearman")
+cor.test(pan_immune_df_med$`Resting dendritic cell`, pan_immune_df_mean$`Resting dendritic cell`, method = "spearman")
+```
+
+<!--Analysis reviewer 2: R2-->
+<!--checking wheather the "log10MB, Mutation Burden, Neoantigen Burden" are highly correated or not by using correlation matrix plot-->
+```{r}
+immune_factor_plot= immune_factor
+colnames(immune_factor_plot) = gsub('\\.',' ',gsub('\\.\\.',' ', colnames(immune_factor_plot)))
+modulator_cor_test = as.matrix(immune_factor_plot[, c('log10 MB ', 'Mutational Burden', 'Neoantigen burden')],)
+
+# cor(na.omit(pan_immune_factor_with_cancerOI[, c('SNV.Neoantigens', 'Nonsilent.Mutation.Rate')]), method = 'pearson')
+
+jpeg('../results/Analysis_R5_threepair_cor_test.jpeg',height=500, width = 500, units = 'px',quality = 300)
+
+correlation_matrix= corrplot.mixed(cor(modulator_cor_test, method= 'pearson'), tl.col="black",tl.cex= 0.9, lower.col='black',number.cex= 1)
+
+dev.off()
+```
+
+
+<!--Run the Analysis, reviewer 3- R4, using 10 percentile-->
+<!--training and testing data preprocessing-->
+```{r}
+# ### DF: Power of TMB with variable, measure by OS
+# 
+# POT_with_variable_by_OS= na.omit(data.frame(OS_difference[allcancer_types,],
+#                               immune_factor[allcancer_types,c(3,22,29,30)]))
+# colnames(POT_with_variable_by_OS)[c(3:6)]= c("Log_10_MB","M1_macrophage","neutrophils","ITH")
+# 
+# POT_with_variable_by_OS = POT_with_variable_by_OS[is.finite(POT_with_variable_by_OS$effect_size),]
+# # POT_with_variable_by_OS= POT_with_variable_by_OS[!(rownames(POT_with_variable_by_OS) %in% c('KIRC')),]
+# 
+# POT_with_variable_by_OS$new_M1_macrophage= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),'Macrophages.M1'])
+# 
+# POT_with_variable_by_OS$new_ITH= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+#                                                                         'Intratumor.Heterogeneity'])
+# POT_with_variable_by_OS$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+#                                                                         'Neutrophils...48'])
+# 
+# POT_with_variable_by_OS[order(POT_with_variable_by_OS$effect_size),]
+# 
+# ### DF: Power of TMB with variable, measure by PFS
+# POT_with_variable_by_PFS= na.omit(data.frame(PFS_difference[allcancer_types,],
+#                               immune_factor[allcancer_types, c(3,22,29,30)]))
+# colnames(POT_with_variable_by_PFS)[c(3:6)]= c("Log_10_MB","M1_macrophage","neutrophils","ITH")
+# 
+# POT_with_variable_by_PFS = POT_with_variable_by_PFS[is.finite(POT_with_variable_by_PFS$effect_size),]
+# 
+# # POT_with_variable_by_PFS= POT_with_variable_by_PFS[!(rownames(POT_with_variable_by_PFS) %in% c('KIRC')),]
+# POT_with_variable_by_PFS$new_M1_macrophage=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS)
+#                                                                               ,'Macrophages.M1'])
+# POT_with_variable_by_PFS$new_ITH= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS),
+#                                                                         'Intratumor.Heterogeneity'])
+# 
+# ### DF: Power of TMB with variable, measure by ORR
+# POT_with_variable_by_ORR= na.omit(data.frame(ORR_difference[allcancer_types,],
+#                               immune_factor[allcancer_types,c(3,22,29,30)])) ## 22,39,24 ,37 for previous modulators
+# colnames(POT_with_variable_by_ORR)[c(3:6)]= c("Log_10_MB","M1_macrophage","neutrophils","ITH")
+# 
+# POT_with_variable_by_ORR = POT_with_variable_by_ORR[is.finite(POT_with_variable_by_ORR$effect_size),]
+# # POT_with_variable_by_ORR= POT_with_variable_by_ORR[!(rownames(POT_with_variable_by_ORR) %in%    c("OV",'COAD')),]
+# 
+# POT_with_variable_by_ORR$new_M1_macrophage=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR)
+#                                                                              ,'Macrophages.M1'])
+# POT_with_variable_by_ORR$new_ITH= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR),
+#                                                                         'Intratumor.Heterogeneity'])
+# 
+# ###### new df with TCGA immune abundance
+# all_cancer_types_trained= allcancer_types[!(allcancer_types %in% c('MESO','STAD','SCLC'))]
+# 
+# test_df_joo= immune_factor[c('ACC','CESC','MESO','UVM', 'PRAD'),c(3,22,29,30)]
+# colnames(test_df_joo)= c("M1_macrophage","Tumor_purity",'Resting_DC',"PDL1_CPS")
+# 
+# test_df_2= na.omit(immune_cells_by_cancerType[!(rownames(immune_cells_by_cancerType) %in% all_cancer_types_trained),c('Macrophages.M1', "Intratumor.Heterogeneity", 'Neutrophils...48')])
+# 
+# test_df_2= test_df_2[!(rownames(test_df_2) %in% c('LUAD','LUSC')),]
+# colnames(test_df_2)=c("M1_macrophage",'ITH', 'neutrophils') 
+# 
+```
+
+<!--Run the Analysis, reviewer 3- R4, using 20 percentile-->
+<!--training and testing data preprocessing-->
+```{r}
+### DF: Power of TMB with variable, measure by OS
+
+# POT_with_variable_by_OS= na.omit(data.frame(OS_difference[allcancer_types,],
+#                               immune_factor[allcancer_types,c(37,15,29,31,11)]))
+# colnames(POT_with_variable_by_OS)[c(3:7)]= c("PDL1_CPS",
+#                                               "CD4_helper_T_cells", 
+#                                              "neutrophils",
+#                                              "PDL1_protein_expression",
+#                                              "CD8_T_cells")
+# 
+# POT_with_variable_by_OS = POT_with_variable_by_OS[is.finite(POT_with_variable_by_OS$effect_size),]
+# # POT_with_variable_by_OS= POT_with_variable_by_OS[!(rownames(POT_with_variable_by_OS) %in% c('KIRC')),]
+# 
+# POT_with_variable_by_OS$new_M1_macrophage= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),'Macrophages.M1'])
+# 
+# POT_with_variable_by_OS$new_CD4_helper_T_cell=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS)
+#                                                                               ,"T.Cells.Follicular.Helper"])
+# POT_with_variable_by_OS$new_CD8_t_cell= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+#                                                                         'T.Cells.CD8'])
+# POT_with_variable_by_OS$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+#                                                                         'Neutrophils...48'])
+# 
+# POT_with_variable_by_OS[order(POT_with_variable_by_OS$effect_size),]
+# 
+# ### DF: Power of TMB with variable, measure by PFS
+# POT_with_variable_by_PFS= na.omit(data.frame(PFS_difference[allcancer_types,],
+#                               immune_factor[allcancer_types, c(37,15,29,31,11)]))
+# colnames(POT_with_variable_by_PFS)[c(3:7)]= c("PDL1_CPS",
+#                                               "CD4_helper_T_cells", 
+#                                              "neutrophils",
+#                                              "PDL1_protein_expression",
+#                                              "CD8_T_cells")
+# 
+# POT_with_variable_by_PFS = POT_with_variable_by_PFS[is.finite(POT_with_variable_by_PFS$effect_size),]
+# 
+# # POT_with_variable_by_PFS= POT_with_variable_by_PFS[!(rownames(POT_with_variable_by_PFS) %in% c('KIRC')),]
+# POT_with_variable_by_PFS$new_CD4_helper_T_cell=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS)
+#                                                                               ,"T.Cells.Follicular.Helper"])
+# POT_with_variable_by_PFS$new_CD8_t_cell= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS),
+#                                                                         'T.Cells.CD8'])
+# POT_with_variable_by_PFS$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS),
+#                                                                         'Neutrophils...48'])
+# ### DF: Power of TMB with variable, measure by ORR
+# POT_with_variable_by_ORR= na.omit(data.frame(ORR_difference[allcancer_types,],
+#                               immune_factor[allcancer_types,c(37,15,29,31,11)])) 
+# colnames(POT_with_variable_by_ORR)[c(3:7)]= c("PDL1_CPS",
+#                                               "CD4_helper_T_cells", 
+#                                              "neutrophils",
+#                                              "PDL1_protein_expression",
+#                                              "CD8_T_cells")
+# POT_with_variable_by_ORR = POT_with_variable_by_ORR[is.finite(POT_with_variable_by_ORR$effect_size),]
+# # POT_with_variable_by_ORR= POT_with_variable_by_ORR[!(rownames(POT_with_variable_by_ORR) %in%    c("OV",'COAD')),]
+# 
+# POT_with_variable_by_ORR$new_CD4_helper_T_cell=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR)
+#                                                                               ,"T.Cells.Follicular.Helper"])
+# POT_with_variable_by_ORR$new_CD8_t_cell= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR),
+#                                                                         'T.Cells.CD8'])
+# POT_with_variable_by_ORR$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR),
+#                                                                         'Neutrophils...48'])
+# 
+# ###### new df with TCGA immune abundance
+# all_cancer_types_trained= allcancer_types[!(allcancer_types %in% c('MESO','STAD','SCLC'))]
+# 
+# test_df_joo= immune_factor[c('ACC','CESC','MESO','UVM', 'PRAD'),c(37,15,29,31,11)]
+# colnames(test_df_joo)= c("PDL1_CPS",
+#                                               "CD4_helper_T_cells", 
+#                                              "neutrophils",
+#                                              "PDL1_protein_expression",
+#                                              "CD8_T_cells")
+# 
+# test_df_2= na.omit(immune_cells_by_cancerType[!(rownames(immune_cells_by_cancerType) %in% all_cancer_types_trained),c("T.Cells.Follicular.Helper", 'Neutrophils...48',"T.Cells.CD8")])
+# 
+# test_df_2= test_df_2[!(rownames(test_df_2) %in% c('LUAD','LUSC')),]
+# colnames(test_df_2)=c("CD4_helper_T_cells", 
+#                                              "neutrophils",
+#                                              "CD8_T_cells") 
+```
+
+<!--Run the Analysis, reviewer 3- R5, using same number of sample, which we get using th >= 10 mut/MB-->
+<!--training and testing data preprocessing-->
+```{r}
+### DF: Power of TMB with variable, measure by OS
+
+# POT_with_variable_by_OS= na.omit(data.frame(OS_difference[allcancer_types,],
+#                               immune_factor[allcancer_types,c(37,2,35,3,15)]))
+# colnames(POT_with_variable_by_OS)[c(3:7)]= c("PDL1_CPS",
+#                                              "Mutational_Burden", 
+#                                              "Neoantigen_burden",
+#                                              "log10_MB",
+#                                              "CD4_helper_T_cells")
+# 
+# 
+# POT_with_variable_by_OS = POT_with_variable_by_OS[is.finite(POT_with_variable_by_OS$effect_size),]
+# # POT_with_variable_by_OS= POT_with_variable_by_OS[!(rownames(POT_with_variable_by_OS) %in% c('KIRC')),]
+# 
+# POT_with_variable_by_OS$new_M1_macrophage= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),'Macrophages.M1'])
+# 
+# POT_with_variable_by_OS$new_CD4_helper_T_cell=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS)
+#                                                                               ,"T.Cells.Follicular.Helper"])
+# POT_with_variable_by_OS$new_CD8_t_cell= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+#                                                                         'T.Cells.CD8'])
+# POT_with_variable_by_OS$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_OS),
+#                                                                         'Neutrophils...48'])
+# 
+# POT_with_variable_by_OS[order(POT_with_variable_by_OS$effect_size),]
+# 
+# ### DF: Power of TMB with variable, measure by PFS
+# POT_with_variable_by_PFS= na.omit(data.frame(PFS_difference[allcancer_types,],
+#                               immune_factor[allcancer_types, c(37,2,35,3,15)]))
+# colnames(POT_with_variable_by_PFS)[c(3:7)]= c("PDL1_CPS",
+#                                              "Mutational_Burden", 
+#                                              "Neoantigen_burden",
+#                                              "log10_MB",
+#                                              "CD4_helper_T_cells")
+# 
+# POT_with_variable_by_PFS = POT_with_variable_by_PFS[is.finite(POT_with_variable_by_PFS$effect_size),]
+# 
+# # POT_with_variable_by_PFS= POT_with_variable_by_PFS[!(rownames(POT_with_variable_by_PFS) %in% c('KIRC')),]
+# 
+# POT_with_variable_by_PFS$new_CD4_helper_T_cell=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS)
+#                                                                               ,"T.Cells.Follicular.Helper"])
+# POT_with_variable_by_PFS$new_CD8_t_cell= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS),
+#                                                                         'T.Cells.CD8'])
+# POT_with_variable_by_PFS$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_PFS),
+#                                                                         'Neutrophils...48'])
+# ### DF: Power of TMB with variable, measure by ORR
+# POT_with_variable_by_ORR= na.omit(data.frame(ORR_difference[allcancer_types,],
+#                               immune_factor[allcancer_types,c(37,2,35,3,15)])) 
+# colnames(POT_with_variable_by_ORR)[c(3:7)]= c("PDL1_CPS",
+#                                              "Mutational_Burden", 
+#                                              "Neoantigen_burden",
+#                                              "log10_MB",
+#                                              "CD4_helper_T_cells")
+# POT_with_variable_by_ORR = POT_with_variable_by_ORR[is.finite(POT_with_variable_by_ORR$effect_size),]
+# # POT_with_variable_by_ORR= POT_with_variable_by_ORR[!(rownames(POT_with_variable_by_ORR) %in%    c("OV",'COAD')),]
+# 
+# POT_with_variable_by_ORR$new_CD4_helper_T_cell=na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR)
+#                                                                               ,"T.Cells.Follicular.Helper"])
+# POT_with_variable_by_ORR$new_CD8_t_cell= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR),
+#                                                                         'T.Cells.CD8'])
+# POT_with_variable_by_ORR$new_neutrophils= na.omit(immune_cells_by_cancerType[rownames(POT_with_variable_by_ORR),
+#                                                                         'Neutrophils...48'])
+# 
+# ###### new df with TCGA immune abundance
+# all_cancer_types_trained= allcancer_types[!(allcancer_types %in% c('MESO','STAD','SCLC'))]
+# 
+# test_df_joo= immune_factor[c('ACC','CESC','MESO','UVM', 'PRAD'),c(37,2,35,3,15)]
+# colnames(test_df_joo)= c("PDL1_CPS",
+#                                              "Mutational_Burden", 
+#                                              "Neoantigen_burden",
+#                                              "log10_MB",
+#                                              "CD4_helper_T_cells")
+# 
+# test_df_2= na.omit(immune_cells_by_cancerType[!(rownames(immune_cells_by_cancerType) %in% all_cancer_types_trained),c("T.Cells.Follicular.Helper", 'Neutrophils...48',"T.Cells.CD8")])
+# 
+# test_df_2= test_df_2[!(rownames(test_df_2) %in% c('LUAD','LUSC')),]
+# colnames(test_df_2)=c("CD4_helper_T_cells", 
+#                                              "neutrophils",
+#                                              "CD8_T_cells") 
+```
+
